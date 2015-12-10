@@ -14,8 +14,8 @@ scriptLoader('https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js')
 
 <!-- Store JS -->
 <script type="text/javascript">
-scriptLoader('http://ebayimages.x10host.com/ozsuperdeal/assets/js/listing_script.js');
-scriptLoader('http://ebayimages.x10host.com/ozsuperdeal/assets/js/zoom.min.js');
+scriptLoader('http://templateassets.atspace.cc/ozsuperdeal/assets/js/listing_script.js');
+scriptLoader('http://templateassets.atspace.cc/ozsuperdeal/assets/js/zoom.min.js');
 
 </script>
 
@@ -23,8 +23,8 @@ scriptLoader('http://ebayimages.x10host.com/ozsuperdeal/assets/js/zoom.min.js');
 <!-- Store CSS -->
 <!-- <link rel="stylesheet" href="http://social.thegoodguys.com.au/ebay_store/2015/listing.css"> -->
 
-<link rel="stylesheet" href="http://ebayimages.x10host.com/ozsuperdeal/assets/css/listing_style.css">
-<link rel="stylesheet" href="http://ebayimages.x10host.com/ozsuperdeal/assets/css/zoom.css">
+<link rel="stylesheet" href="http://templateassets.atspace.cc/ozsuperdeal/assets/css/listing_style.css">
+<link rel="stylesheet" href="http://templateassets.atspace.cc/ozsuperdeal/assets/css/zoom.css">
 
 <title>OZ SUPER DEAL eBay Store</title>
 
@@ -33,7 +33,7 @@ scriptLoader('http://ebayimages.x10host.com/ozsuperdeal/assets/js/zoom.min.js');
 	<div class="container">
 		<div class="header">
 			<div class="logo">
-				<a href="#" title="OZ SUPER DEAL ebay store"><img src="http://ebayimages.x10host.com/ozsuperdeal/assets/images/logo.png" width="235"></a>
+				<a href="#" title="OZ SUPER DEAL ebay store"><img src="http://i.imgur.com/2MzOHbf.png" width="235"></a>
 			</div>
 
 			<div class="search-container">
@@ -43,80 +43,76 @@ scriptLoader('http://ebayimages.x10host.com/ozsuperdeal/assets/js/zoom.min.js');
 				</form>
 			</div>
 		</div> <!-- end header -->
-		
-		
+
+
 
 	</div> <!-- end container -->
-	
+
 	<div class="features">
 		<div class="container">
 			<div class="feature-section">
-			<img src="http://ebayimages.x10host.com/ozsuperdeal/assets/images/feature01.png">
+			<img src="http://i.imgur.com/HE5MAFv.png">
 			<p>
 			<a href="#">Add OZ SUPER DEAL to<br>your favourite eBay Stores</a>
 			</p>
 			</div>
 			<div class="feature-section">
-			<img src="http://ebayimages.x10host.com/ozsuperdeal/assets/images/feature02.png">
+			<img src="http://i.imgur.com/ZLQclU7.png">
 			<p>
 			<a href="#">About our service</a>
 			</p>
 			</div>
 			<div class="feature-section">
-			<img src="http://ebayimages.x10host.com/ozsuperdeal/assets/images/feature03.png">
+			<img src="http://i.imgur.com/CTd5bGE.png">
 			<p>
 			<a href="#">Sign up to get news<br>about hot products<br>and deals</a>
 			</p>
 			</div>
 			<div class="feature-section">
-			<img src="http://ebayimages.x10host.com/ozsuperdeal/assets/images/feature04.png">
+			<img src="http://i.imgur.com/KBglpEA.png">
 			<p>
 			<a href="#">Contact Us</a>
 			</p>
 			</div>
 		</div>
 	</div> <!-- end top four marketing link -->
-	
+
 	<div class="content listing">
 		<div class="container">
-			
-			
+
+
 			<h3><?php echo $product->name; ?></h3>
 			<div class="gallery">
 				<div class="zoom-section">
 					<div class="zoom-small-image">
 						<div id="wrap" style="top:0px;z-index:9999;position:relative;">
-							<a href="products/01.jpg" class="cloud-zoom" id="zoom1" rel="position:'outside',showTitle:false,adjustX:-4,adjustY:-4" style="position: relative; display: block;">
-								<img src="products/01.jpg" style="display: block;">
+							<a href="<?php echo $lstImages[0]; ?>" class="cloud-zoom" id="zoom1" rel="position:'outside',showTitle:false,adjustX:-4,adjustY:-4" style="position: relative; display: block;">
+								<img src="<?php echo $lstImages[0]; ?>" style="display: block;">
 							</a>
 						</div>
 					</div>
 					<div class="zoom-desc">
 						<p>
-						<a href="products/01.jpg" class="cloud-zoom-gallery" rel="useZoom: 'zoom1', smallImage: 'products/01.jpg' "><img class="zoom-tiny-image" src="products/01.jpg"></a>
-						<a href="products/02.jpg" class="cloud-zoom-gallery" rel="useZoom: 'zoom1', smallImage: 'products/02.jpg' "><img class="zoom-tiny-image" src="products/02.jpg"></a>
-						<a href="products/03.jpg" class="cloud-zoom-gallery" rel="useZoom: 'zoom1', smallImage: 'products/03.jpg' "><img class="zoom-tiny-image" src="products/03.jpg"></a>
-						<a href="products/04.jpg" class="cloud-zoom-gallery" rel="useZoom: 'zoom1', smallImage: 'products/04.jpg' "><img class="zoom-tiny-image" src="products/04.jpg"></a>
-						<a href="products/05.jpg" class="cloud-zoom-gallery" rel="useZoom: 'zoom1', smallImage: 'products/05.jpg' "><img class="zoom-tiny-image" src="products/05.jpg"></a>
-						<a href="products/06.jpg" class="cloud-zoom-gallery" rel="useZoom: 'zoom1', smallImage: 'products/06.jpg' "><img class="zoom-tiny-image" src="products/06.jpg"></a>
-						<a href="products/07.jpg" class="cloud-zoom-gallery" rel="useZoom: 'zoom1', smallImage: 'products/07.jpg' "><img class="zoom-tiny-image" src="products/07.jpg"></a>
-						<a href="products/08.jpg" class="cloud-zoom-gallery" rel="useZoom: 'zoom1', smallImage: 'products/08.jpg' "><img class="zoom-tiny-image" src="products/08.jpg"></a>
+						<?php foreach ($lstImages as $image) { ?>
 
+						<a href="<?php echo $image; ?>" class="cloud-zoom-gallery" rel="useZoom: 'zoom1', smallImage: '<?php echo $image; ?>' "><img class="zoom-tiny-image" src="<?php echo $image; ?>"></a>
+
+						<?php } ?>
 						</p>
 					</div>
-					
+
 				</div>
 			</div> <!-- gallery end -->
 			<div class="gallery-detail">
-				<div><?php echo $product->mini_desc; ?></div> 
+				<div><?php echo $product->mini_desc; ?></div>
 
 				<div class="price-section">
 					<h2>$147.00</h2>
 					<script>
-						document.write ('<a target=\"_top\" href=\"http://offer.ebay.com.au/ws/eBayISAPI.dll?BinConfirm&amp;item=' + '111530977399' + '&amp;fromPage=2047675&amp;quantity=1&amp;fb=1" ><img src="http://ebayimages.x10host.com/ozsuperdeal/assets/images/buynow.png" /></a>');
+						document.write ('<a target=\"_top\" href=\"http://offer.ebay.com.au/ws/eBayISAPI.dll?BinConfirm&amp;item=' + '111530977399' + '&amp;fromPage=2047675&amp;quantity=1&amp;fb=1" ><img src="http://i.imgur.com/wNXGJ7c.png" /></a>');
 					</script>
 					<script>
-						document.write ('<a target=\"_parent\" href=\"http://payments.ebay.com.au/ws/eBayISAPI.dll?ShopCartProcessor&item='+'111530977399'+'&atc=true&ssPageName=CART:ATC" title=\"Add to Cart\"><img src="http://ebayimages.x10host.com/ozsuperdeal/assets/images/addtocart.png" /></a>');
+						document.write ('<a target=\"_parent\" href=\"http://payments.ebay.com.au/ws/eBayISAPI.dll?ShopCartProcessor&item='+'111530977399'+'&atc=true&ssPageName=CART:ATC" title=\"Add to Cart\"><img src="http://i.imgur.com/znyFtgg.png" /></a>');
 					</script>
 					<script>
 						document.write ("<a href='http://contact.ebay.com.au/ws1/eBayISAPI.dll?ShowEmailAuctionToFriend&item=" + '111530977399' + "' title='Tell a Friend' class='button_links' id='button_links' >Tell a Friend</a>");

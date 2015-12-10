@@ -287,18 +287,27 @@ class ProductController extends Controller
 
         $product = $this->findModel($id);
         $ebayAcc = EbayAccount::findOne($ebayID);
+        $lstImages = ListingImages::findOne(['product_id'=>$id,'ebay_account_id'=>$ebayID]);
+        $listingImages = ['http://i.imgur.com/roXpiR8.png'];
+        if($lstImages){
+          $listingImages = json_decode($lstImages->image_url);
+        }
         return $this->renderFile(Yii::$app->params['listingTemplatePath'].$ebayAcc->listingTemplate->name.'.php',[
             'ebayAcc'=>$ebayAcc,
             'product'=>$product,
+            'lstImages'=>$listingImages,
         ]);
     }
 
     public function actionGenerateCode($id, $ebayID){
         //var_dump(Url::base(true));exit();
-        $code = file_get_contents(Url::base(true).Url::to(['/product/preview-desc','id'=>$id,'ebayID'=>$ebayID]));
+        // $opts = array('http' => array('header'=> 'Cookie: ' . $_SERVER['HTTP_COOKIE']."\r\n"));
+        // $context = stream_context_create($opts);
+        // $code = file_get_contents(Url::base(true).Url::to(['/product/preview-desc','id'=>$id,'ebayID'=>$ebayID]),false,$context);
+        //$code = file_get_contents(Url::base(true).Url::to(['/product/preview-desc','id'=>$id,'ebayID'=>$ebayID]));
 
         return $this->render('template_code',[
-                'code'=>$code,
+                'code'=>$this->actionPreviewDesc($id, $ebayID),
             ]);
     }
 

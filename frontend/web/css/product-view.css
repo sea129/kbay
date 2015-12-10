@@ -1,0 +1,38 @@
+ul.sortable.grid{
+  margin-left:0 ;
+}
+.sortable.grid li{
+  max-width:68px !important;
+  min-width:68px !important;
+  max-height:87px !important;
+  min-height:87px !important;
+  padding:1px !important;
+  position: relative;
+}
+.lst-img-container{
+  max-height:68px;
+}
+.lst-img-container img{
+  max-height: 64px;
+  max-width: 64px;
+}
+img.discountable{
+  opacity: 0.3;
+}
+.lst-img-delete-container{
+  position: absolute;
+  bottom:0;
+  right: 2px;
+}
+.btn-i-delete-images i{
+  cursor:pointer;
+}
+.btn-i-delete-images i:hover{
+  text-decoration: none;
+    opacity: 1;
+    -moz-transform: scale(1.2);
+    -webkit-transform: scale(1.2);
+    -o-transform: scale(1.2);
+    -ms-transform: scale(1.2);
+    transform: scale(1.2);
+}

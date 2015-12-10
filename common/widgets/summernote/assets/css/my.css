@@ -1,0 +1,53 @@
+.note-toolbar.panel-heading .btn-group > .btn:first-child{
+	margin-left: 0;
+}
+
+.note-toolbar.panel-heading .btn-group > .btn, .btn-group-vertical > .btn{
+	position: relative;
+    float: left;
+}
+.note-toolbar.panel-heading .btn-sm, .btn-group-sm > .btn{
+	padding: 5px 10px;
+    font-size: 12px;
+    line-height: 1.5;
+    border-radius: 3px !important;
+}
+
+.note-toolbar.panel-heading .btn-default{
+	color: #333 !important;
+    background-color: #fff !important;
+    border-color: #ccc !important;
+}
+
+.note-toolbar.panel-heading .btn{
+	display: inline-block;
+	margin-bottom: 0;
+	font-weight: normal;
+	text-align: center;
+	    white-space: nowrap;
+    vertical-align: middle;
+    touch-action: manipulation;
+    cursor: pointer;
+    -webkit-user-select: none;
+    background-image: none;
+    border: 1px solid transparent;
+    text-shadow: none;
+}
+
+
+
+
+.note-toolbar.panel-heading
+
+
+
+
+.note-toolbar.panel-heading
+
+
+
+.note-toolbar.panel-heading
+
+
+
+.note-toolbar.panel-heading

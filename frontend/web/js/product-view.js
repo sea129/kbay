@@ -1,11 +1,20 @@
-//$(document).on('ready pjax:success', function(){
-$(function(){
+$(document).on('pjax:success', function(data, status, xhr, options) {
+  // Prevent default timeout redirection behavior
+  console.log(data.target.id);
+	$('#'+data.target.id+' .btn-i-delete-images').click(function(e){
+		e.preventDefault(e);
+		$(this).parents('.sortable-item').find('img').toggleClass('discountable').toggleClass('countable');
+	});
+})
+$(document).on('ready', function(){
+//$(function(){
 
 	$('.detail-view .col-toggel').click(function(e){
 		$('#'+$(this).attr('data-toggle')).slideToggle(200);
 		$(this).find('.ace-icon').toggleClass('fa-chevron-up').toggleClass('fa-chevron-down');
 		e.preventDefault();
 	});
+
 
 	//var client = new ZeroClipboard( $("#copy") );
 
@@ -30,11 +39,12 @@ $(function(){
 	});
 
 	listingImageInit();
-	//deleteLstImage();
+	deleteLstImage();
 	serializeImgs();
 
 	$('.sortable').disableSelection();
 	//$('.hack-bar').hide();
+
 });
 function serializeImgs(){
 	$('.serializeImgs').click(function(e){
@@ -50,10 +60,8 @@ function serializeImgs(){
 		}else{
 			newSort = null;
 		}
-
-
 		updateListingImgInfo($(this).data().productId, $(this).data().ebayId, newSort);
-		console.log(newSort);
+		//console.log(newSort);
 	});
 }
 function updateListingImgInfo(productID,ebayID,newSort){
@@ -68,7 +76,7 @@ function updateListingImgInfo(productID,ebayID,newSort){
 		}else{
 			alert('error while saving');
 		}
-		console.log(result);
+		//console.log(result);
 		console.log("success");
 	})
 	.fail(function() {

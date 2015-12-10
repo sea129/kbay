@@ -230,7 +230,7 @@ ProductViewAsset::register($this);
                 <div class="widget-main">
                   <?php Pjax::begin(['id' => 'listing-images-pjax-'.$ebayAccountObj->id]); ?>
                   <!-- hack need to fix with better approch later -->
-                  <?php $this->registerJs("$(function(){deleteLstImage();});", \yii\web\View::POS_END, 'my-options'); ?>
+                  <?php //ProductViewAsset::register($this);//$this->registerJs("$(function(){deleteLstImage();});", \yii\web\View::POS_END, 'my-options'); ?>
 
                   <div class="listing-images-loading" style='display:none;text-align:center;'>
                     <img src="<?php echo Url::to(['/images/loading.gif']) ?>" alt="" />

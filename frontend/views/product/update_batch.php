@@ -16,7 +16,6 @@ $this->params['breadcrumbs'][] = $this->title;
 
     <?= $this->render('_form_batch', [
         'model' => $model,
-        'mainID' =>$mainID,
     ]) ?>
 
 </div>

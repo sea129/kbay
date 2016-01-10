@@ -112,7 +112,7 @@ class ListingTemplateController extends Controller
      */
     protected function findModel($id)
     {
-        if (($model = ListingTemplate::findOne($id)) !== null) {
+        if (($model = ListingTemplate::findOne($id)) !== null && Yii::$app->user->can('ebaycontrol',['userID'=>$model->user_id])) {
             return $model;
         } else {
             throw new NotFoundHttpException('The requested page does not exist.');

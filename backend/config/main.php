@@ -8,6 +8,7 @@ $params = array_merge(
 
 return [
     'id' => 'app-backend',
+    'language' => 'zh-CN',
     'basePath' => dirname(__DIR__),
     'controllerNamespace' => 'backend\controllers',
     'bootstrap' => ['log'],
@@ -41,6 +42,22 @@ return [
                     '@app/views' => [
                         '@app/themes/ace/views',
                     ],
+                ],
+            ],
+        ],
+        'i18n' => [
+            'translations' => [
+                'app*' => [
+                    'class' => 'yii\i18n\PhpMessageSource',
+                    'basePath' => '@app/messages',
+                    'sourceLanguage' => 'en-US',
+                    /*'fileMap' => [
+                        'app' => 'app.php',
+                        'app/error' => 'error.php',
+                        'app/product' => 'product.php',
+                        'app/ebayaccount' => 'ebayaccount.php',
+                        'app/category' => 'category.php',
+                    ],*/
                 ],
             ],
         ],

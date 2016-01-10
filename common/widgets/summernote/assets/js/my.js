@@ -23,9 +23,9 @@ function summerNoteImgUpload(file,id,imgServer)
         		$('#'+id).summernote('editor.insertImage', url.data.img_url);
         		setTimeout(function(){$node[0].remove();},'800');
         		//$node[0].remove();
-        		
+
         	}
-        	
+
         }
     });
 }

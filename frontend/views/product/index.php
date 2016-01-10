@@ -25,22 +25,37 @@ $ebayAccounts = $searchModel->getEbayAccouts();
         'dataProvider' => $dataProvider,
         'filterModel' => $searchModel,
         'columns' => [
-            ['class' => 'yii\grid\SerialColumn'],
-
+            //['class' => 'yii\grid\SerialColumn'],
+            // [
+            //   'attribute'=>'main_image',
+            //   'format'=>['image','options'=>['width'=>'100px']],
+            // ],
+            [
+              'attribute'=>'main_image',
+              'value'=>function($model, $key, $index, $column){$url = explode('/',$model->main_image);array_splice($url,-1,0,'t');return implode('/',$url);},
+              'format'=>['image','options'=>['width'=>'100px']],
+            ],
             // 'id',
             'sku',
             'name',
             // 'mini_desc:ntext',
-            // 'stock_qty',
-            // 'cost',
+             'stock_qty',
+             'cost',
             // 'description:ntext',
             // 'specs:ntext',
-            // 'category_id',
+            // [
+            //   'label'=>Yii::t('app/product', 'Category ID'),
+            //   'attribute'=>'category.name',
+            // ],
+            // [
+            //   'label'=>Yii::t('app/product', 'Supplier ID'),
+            //   'attribute'=>'supplier.name',
+            // ],
             // 'user_id',
-            // 'stock_location',
-            // 'supplier_id',
+             'stock_location',
+
             // 'packaging_id',
-            // 'weight',
+             'weight',
             // 'is_trackable',
             // 'comment:ntext',
             // 'qty_per_order',
@@ -55,7 +70,7 @@ $ebayAccounts = $searchModel->getEbayAccouts();
                         return Html::a('<span class="ace-icon fa fa-eye"></span>',$url,['class'=>'btn btn-xs btn-primary']);
                     },
                     'delete' => function($url, $model, $key){
-                        return Html::a('<span class="ace-icon fa fa-trash-o"></span>',$url,['class'=>'btn btn-xs btn-danger','data-confirm'=>Yii::t('yii', 'Are you sure you want to delete this item?')]);
+                        return Html::a('<span class="ace-icon fa fa-trash-o"></span>',$url,['class'=>'btn btn-xs btn-danger','data-method'=>'post','data-confirm'=>Yii::t('yii', 'Are you sure you want to delete this item?')]);
                     },
                     'add-batch-product' => function($url, $model, $key){
                         if($model->qty_per_order===1){
@@ -66,32 +81,32 @@ $ebayAccounts = $searchModel->getEbayAccouts();
                     },
                     'update'=>function($url,$model,$key){
                         if($model->stock_qty===null){
-                            return Html::a('<span class="ace-icon fa fa-pencil"></span>',Url::to(['product/update-batch-product','id'=>$key]),['class'=>'btn btn-xs btn-warning']);
+                            return Html::a('<span class="ace-icon fa fa-pencil"></span>',Url::to(['product/update-batch-product','id'=>$key]),['class'=>'btn btn-xs btn-info']);
                         }else{
                             return Html::a('<span class="ace-icon fa fa-pencil"></span>',$url,['class'=>'btn btn-xs btn-info']);
                         }
                     },
                 ]
             ],
-            [
-                'class' => 'yii\grid\ActionColumn',
-                'header'=> Yii::t('app/product','Preview'),
-                'template'   => '{preview-desc}',
-                'buttons' => ['preview-desc' => function($url, $model, $key) use ($ebayAccounts){
-                        $result = Html::beginForm($url,'post',['target'=>'_blank']);
-                        $result .= Html::beginTag('div',['class'=>'input-group']);
-                        $result .= Html::dropDownList('ebayAccID',null,$ebayAccounts,['class'=>'form-control']);
-                        $result .= Html::beginTag('span',['class'=>'input-group-btn']);
-                        $result .= Html::submitButton(Html::beginTag('i',['class'=>'ace-icon fa fa-file-code-o bigger-170']).Html::endTag('i'), ['class' => 'btn btn-xs btn-success']);
-                        $result .= Html::endTag('span');
-                        $result .= Html::endTag('div');
-                        $result .= Html::endForm();
-                        return $result;
-                        //return var_dump($key);
-                        //return Html::a(Html::beginTag('i',['class'=>'ace-icon fa fa-file-code-o bigger-120']).Html::endTag('i'),$url,['class'=>'btn btn-xs btn-info','target'=>'_blank']);
-                    },],
-                'contentOptions' => ['style'=>'max-width: 140px;'],
-            ],
+            // [
+            //     'class' => 'yii\grid\ActionColumn',
+            //     'header'=> Yii::t('app/product','Preview'),
+            //     'template'   => '{preview-desc}',
+            //     'buttons' => ['preview-desc' => function($url, $model, $key) use ($ebayAccounts){
+            //             $result = Html::beginForm($url,'post',['target'=>'_blank']);
+            //             $result .= Html::beginTag('div',['class'=>'input-group']);
+            //             $result .= Html::dropDownList('ebayAccID',null,$ebayAccounts,['class'=>'form-control']);
+            //             $result .= Html::beginTag('span',['class'=>'input-group-btn']);
+            //             $result .= Html::submitButton(Html::beginTag('i',['class'=>'ace-icon fa fa-file-code-o bigger-170']).Html::endTag('i'), ['class' => 'btn btn-xs btn-success']);
+            //             $result .= Html::endTag('span');
+            //             $result .= Html::endTag('div');
+            //             $result .= Html::endForm();
+            //             return $result;
+            //             //return var_dump($key);
+            //             //return Html::a(Html::beginTag('i',['class'=>'ace-icon fa fa-file-code-o bigger-120']).Html::endTag('i'),$url,['class'=>'btn btn-xs btn-info','target'=>'_blank']);
+            //         },],
+            //     'contentOptions' => ['style'=>'max-width: 140px;'],
+            // ],
 
         ],
     ]); ?>

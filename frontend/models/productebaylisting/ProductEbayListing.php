@@ -35,7 +35,7 @@ class ProductEbayListing extends \yii\db\ActiveRecord
     {
         return [
             [['sku', 'ebay_account_id', 'item_id'], 'required'],
-            [['ebay_account_id', 'qty'], 'integer'],
+            [['ebay_account_id', 'qty', 'qty_sold'], 'integer'],
             [['price'], 'number'],
             [['updated_at'], 'safe'],
             [['sku'], 'string', 'max' => 64],
@@ -52,13 +52,13 @@ class ProductEbayListing extends \yii\db\ActiveRecord
     public function attributeLabels()
     {
         return [
-            'sku' => Yii::t('app/productebaylsting', 'Sku'),
-            'ebay_account_id' => Yii::t('app/productebaylsting', 'Ebay Account ID'),
-            'item_id' => Yii::t('app/productebaylsting', 'Item ID'),
-            'price' => Yii::t('app/productebaylsting', 'Price'),
-            'title' => Yii::t('app/productebaylsting', 'Title'),
-            'updated_at' => Yii::t('app/productebaylsting', 'Updated At'),
-            'qty' => Yii::t('app/productebaylsting', 'Qty'),
+            'sku' => Yii::t('app/listing', 'Sku'),
+            'ebay_account_id' => Yii::t('app/listing', 'Ebay Account ID'),
+            'item_id' => Yii::t('app/listing', 'Item ID'),
+            'price' => Yii::t('app/listing', 'Price'),
+            'title' => Yii::t('app/listing', 'Title'),
+            'updated_at' => Yii::t('app/listing', 'Updated At'),
+            'qty' => Yii::t('app/listing', 'Qty'),
         ];
     }
 

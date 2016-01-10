@@ -23,7 +23,7 @@
     </div>
 
     <ul class="nav nav-list">
-        
+
         <li class="active">
             <a href="index.html">
                 <i class="menu-icon fa fa-tachometer"></i>
@@ -32,7 +32,7 @@
 
             <b class="arrow"></b>
         </li>
-        
+
         <li class="">
             <a href="#" class="dropdown-toggle">
                 <i class="menu-icon ace-icon fa fa-users"></i>
@@ -43,7 +43,7 @@
                 <b class="arrow fa fa-angle-down"></b>
             </a>
             <b class="arrow"></b>
-            
+
             <ul class="submenu">
                 <li class="">
                     <a href="/rbacm/role">
@@ -71,7 +71,27 @@
                 </li>
             </ul>
         </li>
+        <li class="">
+            <a href="#" class="dropdown-toggle">
+                <i class="menu-icon ace-icon fa fa-users"></i>
+                <span class="menu-text">
+                    Setting
+                </span>
 
+                <b class="arrow fa fa-angle-down"></b>
+            </a>
+            <b class="arrow"></b>
+
+            <ul class="submenu">
+                <li class="">
+                    <a href="/app-setting">
+                         <i class="menu-icon fa fa-caret-right"></i>
+                            App Setting
+                    </a>
+                </li>
+                
+            </ul>
+        </li>
         <li class="">
             <a href="#" class="dropdown-toggle">
                 <i class="menu-icon fa fa-desktop"></i>

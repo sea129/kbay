@@ -28,7 +28,7 @@ class Supplier extends \frontend\models\base\MyActiveRecord
         return 'supplier';
     }
 
-    
+
     /**
      * @inheritdoc
      */
@@ -41,7 +41,7 @@ class Supplier extends \frontend\models\base\MyActiveRecord
             [['name'], 'string', 'max' => 64],
             [['address'], 'string', 'max' => 256],
             [['phone', 'email'], 'string', 'max' => 32],
-            [['name', 'user_id'], 'unique', 'targetAttribute' => ['name', 'user_id'], 'message' => 'The combination of Name and User ID has already been taken.']
+            [['name', 'user_id'], 'unique', 'targetAttribute' => ['name', 'user_id'], 'message' => 'The Name has already been taken.']
         ];
     }
 

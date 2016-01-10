@@ -20,12 +20,14 @@ class ProductAsset extends AssetBundle
     public $css = [
         /*'css/ebayaccount.css',*/
     ];
+    public $jsOptions = ['position' => \yii\web\View::POS_HEAD];
     public $js = [
         'js/canvas-to-blob.js',
         'js/product.js',
     ];
     public $depends = [
-        'yii\web\YiiAsset',
-        'yii\bootstrap\BootstrapAsset',
+      'yii\web\YiiAsset',
+      'yii\bootstrap\BootstrapPluginAsset',
+
     ];
 }

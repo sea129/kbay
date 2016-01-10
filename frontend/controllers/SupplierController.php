@@ -71,8 +71,8 @@ class SupplierController extends Controller
             }else{
                 return Json::encode([false,$model->errors]);
             }
-            
-            
+
+
         }
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
@@ -134,7 +134,7 @@ class SupplierController extends Controller
      */
     protected function findModel($id)
     {
-        if (($model = Supplier::findOne($id)) !== null) {
+        if (($model = Supplier::findOne($id)) !== null && Yii::$app->user->can('ebaycontrol',['userID'=>$model->user_id])) {
             return $model;
         } else {
             throw new NotFoundHttpException('The requested page does not exist.');

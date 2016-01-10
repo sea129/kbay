@@ -23,6 +23,8 @@ use yii\helpers\Url;
 use yii\web\UploadedFile;
 
 use yii2mod\ftp\FtpClient;
+
+use frontend\models\listings\Listing;
 /**
  * ProductController implements the CRUD actions for Product model.
  */
@@ -34,7 +36,7 @@ class ProductController extends Controller
             'verbs' => [
                 'class' => VerbFilter::className(),
                 'actions' => [
-                    'delete' => ['get'],
+                    'delete' => ['post'],
                 ],
             ],
             'access'=>[
@@ -73,16 +75,12 @@ class ProductController extends Controller
      */
     public function actionView($id)
     {
-        $product = $this->findModel($id);
-        //$listings = (new EbayListing())->getListingInAllEbay($product->sku);
-        if(Yii::$app->user->can('ebaycontrol',['userID'=>$product->user_id])){
-           return $this->render('view', [
-                'model' => $product,
-                //'listings' => $listings,
-            ]);
-        }else{
-            throw new \yii\web\ForbiddenHttpException(Yii::t('yii', 'You are not allowed to perform this action.'));
-        }
+      $product = $this->findModel($id);
+      $listings = Listing::find()->where(['sku'=>$product->sku,'user_id'=>Yii::$app->user->id])->indexBy('ebay_id')->all();
+      return $this->render('view', [
+          'model' => $product,
+          'listings'=>$listings,
+      ]);
 
     }
 
@@ -94,58 +92,33 @@ class ProductController extends Controller
     public function actionCreate()
     {
         $model = new Product();
-        $model->qty_per_order = 1;
-        if ($model->load(Yii::$app->request->post())) {
-            $oldSKU = explode('-',$model->sku);
-            $oldSKU['1'] .= $model->user_id.$model->id;
-            $model->sku = implode('-',$oldSKU);
-            $model->main_image = $this->moveTempImage($model);
-            if($model->save())
-            {
-                return $this->redirect(['view', 'id' => $model->id]);
-
-            }else{
-                return $this->render('create', [
-                    'model' => $model,
-                ]);
-            }
-
-        } else {
-            if(!Yii::$app->request->isAjax && $tempImage = Yii::$app->session->get('tempProductImage')){//not pjax
-                //删除temp product image
-                unlink($tempImage);
-                Yii::$app->session->remove('tempProductImage');
-            }
+        $model->scenario = Product::SCENARIO_SINGLE;
+        if($model->load(Yii::$app->request->post())) {
+          $model->qty_per_order = 1;
+          if($model->save()){
+            return $this->redirect(['view', 'id' => $model->id]);
+          }else {
             return $this->render('create', [
                 'model' => $model,
             ]);
+          }
+        }else {
+          $model->qty_per_order = 1;
+          return $this->render('create', [
+              'model' => $model,
+          ]);
         }
     }
+
     /**
-     * 把temp image移动到product image里并改名
-     * @param  [type] $oldName [description]
-     * @param  [type] $sku     [description]
-     * @return [type]          [description]
+     * create a batch product base on one main product
      */
-    private function moveTempImage($model){
-        if($tempImage = Yii::$app->session->get('tempProductImage')){
-            if(rename($tempImage,Yii::$app->params['privateImagePath'].'product-images/'.Yii::$app->user->id.'/'.$model->sku.'.'.pathinfo($tempImage, PATHINFO_EXTENSION))){
-                if(Yii::$app->session->remove('tempProductImage')){
-                    return $model->sku.'.'.pathinfo($tempImage, PATHINFO_EXTENSION);
-                }else{
-                    return false;
-                }
-
-            }else{
-                return false;
-            }
-        }else{
-            return $model->main_image?$model->main_image:false;
-        }
-    }
-
     public function actionAddBatchProduct($mainID){
-        $model = new BatchProduct($mainID);
+        $model = new Product();
+        $model->scenario = Product::SCENARIO_BATCH;
+        $mainProduct = $this->findModel($mainID);
+        $model->attributes = $mainProduct->getAttributes();
+        $model->stock_qty = null;
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
             $relation = new ProductRelation();
             $relation->main = $mainID;
@@ -156,61 +129,48 @@ class ProductController extends Controller
                  throw new NotFoundHttpException('Error Saving Product');
             }
 
-        }
-        return $this->render('add_batch',[
-            'model' => $model,
-            'mainID' =>$mainID,
+        }else{
+          $model->qty_per_order = 2;
+          return $this->render('add_batch',[
+              'model' => $model,
+              'mainID' =>$mainID,
 
-        ]);
+          ]);
+        }
+
 
     }
 
+    /**
+     * update a batch product
+     */
     public function actionUpdateBatchProduct($id)
     {
-        $relation = ProductRelation::find()->where(['sub'=>$id])->one();
-        $mainID = $relation->main;
-        $model= new BatchProduct($mainID);
-        $model = $model->findOne($id);
-
+        $model=$this->findModel($id);
+        $model->scenario = Product::SCENARIO_BATCH;
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
             return $this->redirect(['view', 'id' => $model->id]);
         }else{
             return $this->render('update_batch',[
                 'model' => $model,
-                'mainID' =>$mainID,
             ]);
         }
     }
 
-
-
-
-    public function actionValidateForm($id=null,$mainID=null)
+    public function actionValidateForm($id=null,$scenario=Product::SCENARIO_SINGLE)
     {
-
-        if($id){//update
-            if($mainID){//update a batch product
-                $model = BatchProduct::findOne($id);
-            }else{//product
-                $model = $this->findModel($id);
-            }
-
-        }else{//create
-            if($mainID){
-                $model = new BatchProduct($mainID);
-            }else{
-                $model = new Product();
-            }
-        }
-        if(Yii::$app->request->isAjax && $model->load(Yii::$app->request->post())){
-            Yii::$app->response->format = Response::FORMAT_JSON;
-            return ActiveForm::validate($model);
-        }else{
-            var_dump($batch);
-        }
+      if($id){
+        $model=$this->findModel($id);
+      }else{
+        $model = new Product();
+      }
+      $model->scenario = $scenario;
+      if(Yii::$app->request->isAjax && $model->load(Yii::$app->request->post())){
+          Yii::$app->response->format = Response::FORMAT_JSON;
+          return ActiveForm::validate($model);
+      }
 
     }
-
 
     /**
      * Updates an existing Product model.
@@ -221,36 +181,22 @@ class ProductController extends Controller
     public function actionUpdate($id)
     {
         $model = $this->findModel($id);
-        if(Yii::$app->user->can('ebaycontrol',['userID'=>$model->user_id])){
-            $mainImage = $model->main_image;
-            if ($model->load(Yii::$app->request->post())){
-                $model->main_image = $mainImage;
-                $model->main_image = $this->moveTempImage($model);
-                // if(!$model->validate()){
-                //   var_dump($model->errors);exit();
-                // }
-                if($model->save())
-                {
-                    return $this->redirect(['view', 'id' => $model->id]);
-                }else{
-                    return $this->render('update', [
-                        'model' => $model,
-                    ]);
-                }
-
-            } else {
-                if(!Yii::$app->request->isAjax && $tempImage = Yii::$app->session->get('tempProductImage')){//not pjax
-                    //删除temp product image
-                    unlink($tempImage);
-                    Yii::$app->session->remove('tempProductImage');
-                }
+        $model->scenario = Product::SCENARIO_SINGLE;
+        if ($model->load(Yii::$app->request->post())){
+            $model->qty_per_order = 1;
+            if($model->save())
+            {
+                return $this->redirect(['view', 'id' => $model->id]);
+            }else{
                 return $this->render('update', [
                     'model' => $model,
                 ]);
             }
 
-        }else{
-            throw new \yii\web\ForbiddenHttpException(Yii::t('yii', 'You are not allowed to perform this action.'));
+        } else {
+            return $this->render('update', [
+                'model' => $model,
+            ]);
         }
     }
 
@@ -262,9 +208,12 @@ class ProductController extends Controller
      */
     public function actionDelete($id)
     {
-        $this->findModel($id)->delete();
-
-        return $this->redirect(['index']);
+        $model=$this->findModel($id);
+        if($model->delete()){
+          return $this->redirect(['index']);
+        }else {
+            throw new NotFoundHttpException('Error when deleting the good');
+        }
     }
 
     /**
@@ -276,7 +225,7 @@ class ProductController extends Controller
      */
     protected function findModel($id)
     {
-        if (($model = Product::findOne($id)) !== null) {
+        if (($model = Product::findOne($id)) !== null && Yii::$app->user->can('ebaycontrol',['userID'=>$model->user_id])) {
             return $model;
         } else {
             throw new NotFoundHttpException('The requested page does not exist.');
@@ -300,38 +249,9 @@ class ProductController extends Controller
     }
 
     public function actionGenerateCode($id, $ebayID){
-        //var_dump(Url::base(true));exit();
-        // $opts = array('http' => array('header'=> 'Cookie: ' . $_SERVER['HTTP_COOKIE']."\r\n"));
-        // $context = stream_context_create($opts);
-        // $code = file_get_contents(Url::base(true).Url::to(['/product/preview-desc','id'=>$id,'ebayID'=>$ebayID]),false,$context);
-        //$code = file_get_contents(Url::base(true).Url::to(['/product/preview-desc','id'=>$id,'ebayID'=>$ebayID]));
-
-        return $this->render('template_code',[
+      return $this->render('template_code',[
                 'code'=>$this->actionPreviewDesc($id, $ebayID),
             ]);
-    }
-
-    public function actionFindPackaging()
-    {
-        if(Yii::$app->request->isAjax){
-            Yii::$app->response->format = Response::FORMAT_JSON;
-            $post = Yii::$app->request->post();
-            $model = new \frontend\models\packagingpost\PackagingPost;
-            if($post['track']==1){
-                $where = ['=','type','track parcel'];
-            }else{
-                $where = ['<>','type','track parcel'];
-            }
-            return $model->find()
-                ->where($where)
-                ->andWhere(['>=','weight_offset',$post['weight']])
-                ->asArray()
-                ->indexBy('id')
-                ->all();
-
-        }
-
-
     }
 
     public function actionFindAllPackaging()
@@ -348,95 +268,8 @@ class ProductController extends Controller
     }
 
     /**
-     * 上传图片,处理上传产品主图片的动作
-     * @return [type] [description]
+     * 保存listing images
      */
-    public function actionAjaxUpload(){
-        if(Yii::$app->request->isAjax){
-            $model = new Product();
-            $image = $model->uploadImage();
-            Yii::$app->response->format = Response::FORMAT_JSON;
-            if($image!==false){
-                $folder = Yii::$app->params['privateImagePath'].'product-images/'.Yii::$app->user->id;
-                //return $folder;
-                if(!is_dir($folder)){
-                    mkdir($folder,0755,true);
-                }
-                if($image->saveAs($folder. '/temp/temp.'.$image->extension)){
-                    //在session里保存上传图片,主要目的是保存后缀
-                    $session = Yii::$app->session;
-                    $session['tempProductImage'] = $folder.'/temp/temp.'.$image->extension;
-
-                    return true;
-                }
-            }
-        }
-    }
-
-    /**
-     * read uploaded image and output it in create and update forms
-     * @return [type] [description]
-     */
-    public function actionReadImage($imageName = null){
-        if($imageName!=null){
-            $tempImage = Yii::$app->params['privateImagePath'].'product-images/'.Yii::$app->user->id.'/'.$imageName;
-            $response = Yii::$app->getResponse();
-            $response->headers->set('Content-Type', 'image/jpeg');
-            $response->format = Response::FORMAT_RAW;
-            if ( !is_resource($response->stream = fopen($tempImage, 'r')) ) {
-               throw new \yii\web\ServerErrorHttpException('file access failed: permission deny');
-            }
-            return $response->send();
-        }else{
-           $session = Yii::$app->session;
-            if(!isset($session['tempProductImage'])){
-                throw new NotFoundHttpException('The requested page does not exist.');
-            }else{
-                $response = Yii::$app->getResponse();
-                $response->headers->set('Content-Type', 'image/jpeg');
-                $response->format = Response::FORMAT_RAW;
-
-
-                if ( !is_resource($response->stream = fopen($session['tempProductImage'], 'r')) ) {
-                   throw new \yii\web\ServerErrorHttpException('file access failed: permission deny');
-                }
-                return $response->send();
-            }
-        }
-    }
-
-    // public function actionUploadListImage(){
-    //     if(Yii::$app->request->isAjax){
-    //         Yii::$app->response->format = Response::FORMAT_JSON;
-    //         $product = $this->findModel(Yii::$app->request->post('productID'));
-    //         if(Yii::$app->user->can('ebaycontrol',['userID'=>$product->user_id])){
-    //             $product->scenario = 'upTmpLstImage';
-    //             $product->listingTmpImage = UploadedFile::getInstanceByName('pimages[0]');
-    //             if($product->uploadTmpLstImg(Yii::$app->request->post('ebaySeller'))){
-    //                 return true;
-    //             }
-    //         }else{
-    //             throw new \yii\web\ForbiddenHttpException(Yii::t('yii', 'You are not allowed to perform this action.'));
-    //         }
-    //
-    //         /*$product->ftpUpLstImages($file);
-    //
-    //         $ftp = new \yii2mod\ftp\FtpClient();
-    //
-    //         $ftp->connect('ftp.ebayimages.x10host.com');
-    //         $ftp->login('admin@ebayimages.x10host.com','Sea85129');
-    //         //return var_dump(Yii::$app->request->post());
-    //         //return '/pimages/'.Yii::$app->request->post('sellerID').'/'.Yii::$app->request->post('productSKU');
-    //         $imageDir = '/pimages/'.Yii::$app->request->post('sellerID').'/'.Yii::$app->request->post('productSKU');
-    //         if($ftp->isDir($imageDir)){
-    //
-    //         }else{
-    //             $ftp->mkdir('/pimages/'.Yii::$app->request->post('sellerID').'/'.Yii::$app->request->post('productSKU'));
-    //         }*/
-    //
-    //         //return UploadedFile::getInstanceByName('pimages[0]');
-    //     }
-    // }
     public function actionSaveLstImgInfo()
     {
       if(Yii::$app->request->isAjax){
@@ -467,6 +300,7 @@ class ProductController extends Controller
       }
     }
 
+
     public function actionUpdateLstImgInfo(){
       if(Yii::$app->request->isAjax){
         Yii::$app->response->format = Response::FORMAT_JSON;
@@ -486,5 +320,6 @@ class ProductController extends Controller
         }
       }
     }
+
 
 }

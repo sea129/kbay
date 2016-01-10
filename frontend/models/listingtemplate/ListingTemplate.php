@@ -12,7 +12,7 @@ use Yii;
  *
  * @property EbayAccount[] $ebayAccounts
  */
-class ListingTemplate extends \yii\db\ActiveRecord
+class ListingTemplate extends \frontend\models\base\MyActiveRecord
 {
     /**
      * @inheritdoc

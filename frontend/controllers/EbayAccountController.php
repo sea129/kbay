@@ -53,10 +53,10 @@ class EbayAccountController extends Controller
      */
     public function actionView($id)
     {
-        $ebayAcc = $this->findModel($id);
+        $model=$this->findModel($id);
         $synListingInfo = ProductEbayListing::find()->allOfEbay($id,$db = null);
         return $this->render('view', [
-            'model' => $ebayAcc,
+            'model' => $model,
             'synListingInfo' => $synListingInfo,
         ]);
     }
@@ -106,7 +106,8 @@ class EbayAccountController extends Controller
      */
     public function actionDelete($id)
     {
-        $this->findModel($id)->delete();
+        $model=$this->findModel($id);
+        $model->delete();
 
         return $this->redirect(['index']);
     }
@@ -120,7 +121,7 @@ class EbayAccountController extends Controller
      */
     protected function findModel($id)
     {
-        if (($model = EbayAccount::findOne($id)) !== null) {
+        if (($model = EbayAccount::findOne($id)) !== null && Yii::$app->user->can('ebaycontrol',['userID'=>$model->user_id])) {
             return $model;
         } else {
             throw new NotFoundHttpException('The requested page does not exist.');
@@ -143,7 +144,7 @@ class EbayAccountController extends Controller
 
         $ebayApi = new EbayApi();
         if($theID===null){
-            
+
             $sesId = $ebayApi->getSessionID();
             if($sesId!=false){
                 $session->set('ebSession',$sesId['sesId']);
@@ -184,7 +185,7 @@ class EbayAccountController extends Controller
         if($request->isAjax){
             $ebayListing = new EbayListing($id);
             $syncResult = $ebayListing->syncListings(true);
-            
+
             echo Json::encode($syncResult);
         }else{
             echo Json::encode("NOT AJAX!Denied");

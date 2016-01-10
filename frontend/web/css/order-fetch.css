@@ -1,0 +1,14 @@
+.infobox-container{
+  margin-bottom: 10px;
+}
+.infobox-small{
+  width: 190px !important;
+}
+.infobox-small .infobox-data{
+  max-width:120px !important;
+}
+#btn-main-fetch{
+  padding:10px !important;
+  padding-top:8px !important;
+  margin-top:1px !important;
+}

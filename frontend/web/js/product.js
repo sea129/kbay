@@ -1,12 +1,12 @@
 $(function(){
 
-	newId = Date.now().toString().substr(Math.floor((Math.random() * 5) + 1),5);
+
 	//subProduct = false;
-	
+
 	/*spinners*/
 	$('#product-stock_qty').ace_spinner({
         max: 999,
-		min: 0,
+				min: 0,
         step: 9,
 	});
 
@@ -17,16 +17,9 @@ $(function(){
         step: 1,
 	});*/
 
-	setSKU('OTR',newId,$('#product-qty_per_order').val());
-	
-	
-	/*GET SKU FIRST*/
-	getSKU();
-
-	
 	$('.field-product-qty_per_order .ace-spinner .btn').addClass('btn-danger');
 	$('.field-product-qty_per_order .ace-spinner .btn i.ace-icon').removeClass('icon-only');
-	
+
 	$('.ace-spinner .ace-spinner .btn').addClass('btn-danger');
 	$('.ace-spinner .ace-spinner .btn i.ace-icon').removeClass('icon-only');
 
@@ -40,18 +33,23 @@ $(function(){
 	updatePackagings();
 	$('#product-weight').add('#product-is_trackable').on('change',updatePackagings);
 
-	//linkProduct();
-
 	/*去除autocomplte的提示bug*/
 	$( "#main-sku" ).on( "autocompleteclose", function( event, ui ) { $(".ui-helper-hidden-accessible").remove();} );
 	$( "#main-sku" ).on( "autocompletecreate", function( event, ui ) { $(".ui-helper-hidden-accessible").remove();} );
 
-	/*$('#product-productimage').on('fileuploaded', function(event, data, previewId, index){
-		$.pjax.reload({container: '#product-image'});
-	});*/
-	
+	autoSKU();
 });
+function autoSKU(){
+	$('#auto-sku').click(function(){
+		var newId = Math.random().toString().substr(2,8);
+		var catCode=$('#product-category_id').find(':selected').data('catCode');
+		//console.log(catCode);
+		if(typeof catCode!=='undefined'){
+			$('#product-sku').val(catCode+'-'+newId+'-'+'M');
+		}
 
+	});
+}
 function getAllPackaging(){
 	var all;
 	$.ajax({
@@ -65,125 +63,13 @@ function getAllPackaging(){
 	});
 	return all;
 }
-/*function linkProduct(){
-	$('#link-product').click(function(){
-		mainSKU = $("#main-sku").val();
-		$.ajax({
-			url: '/product/get-id',
-			data: { 'sku':mainSKU },
-			type: 'post',
-			success:function(product){
-				if(product==false){
-					alert('Wrong SKU');
-				}else{
-
-					subProduct = true;
-					$('#main-product-id').val(product);
-					$('#product-sku').val(product['sku']).prop('readonly', true);
-					$('#product-name').val($('#product-qty_per_order').val()+'X '+product['name']).prop('readonly', true);
-					$('#product-stock_qty').val(null).prop('readonly', true);
-					$('#product-stock_qty').ace_spinner('disable');
-					$('.field-product-stock_qty .btn').hide();
-					$('#product-cost').val(product['cost']).prop('readonly', true);
-					$('#product-supplier_id').val(product['supplier_id']).prop('readonly', true);
-					$('#product-category_id').val(product['category_id']).prop('readonly', true);
-					$('#product-stock_location').val(product['stock_location']).prop('readonly', true);
-
-
-					console.log(product['name']);
-				}
-				
-			}
-		});
-	});
-}*/
-function setSKU(cate,value,qty){
-	$('#product-sku').val(cate+'-'+value+'-'+'X'+qty);
-}
-function getSKU(){
-
-	$('#product-category_id').change(function(){
-		$.ajax({
-			url: '/category/get-code',
-			data:{'id':$(this).val()},
-			type:'post',
-			success:function(response){
-				if(response!='error'){
-					//$('#product-sku').val(response+'-'+newId);
-					setSKU(response,newId,$('#product-qty_per_order').val());
-				}else{
-					//console.log(typeof($('#product-category_id').val()));
-					if($('#product-sku').val()){
-						setSKU('OTR',newId,$('#product-qty_per_order').val());
-					}else{
-						alert('Category: '+$('#product-category_id').val()+' not found');
-					}
-					
-				}
-			}
-		});
-	});
-
-/*	$('#product-qty_per_order').closest('.ace-spinner').on('changed.fu.spinbox', function () {
-		temp = $('#product-sku').val();
-		tempArr = temp.split('-X');
-		$('#product-sku').val(tempArr[0]+'-X'+$('#product-qty_per_order').val());
-		if(subProduct==true){
-			tempName = $('#product-name').val().substr(3);
-			$('#product-name').val($('#product-qty_per_order').val()+'X '+tempName);
-
-		}
-	});*/
-}
-
-/*function updatePackagings(){
-	
-	$('#product-weight').add('#product-is_trackable').change(function(){
-		
-		weight = $('#product-weight').val();
-		if($('#product-is_trackable').is(":checked")){
-			track = 1;
-		}else{
-			track = 0;
-		}
-
-		$.ajax({
-			url: '/product/find-packaging',
-			type: 'post',
-			data: {'weight':weight, 'track': track},
-			success:function(response){
-				
-				
-				available = [];
-				$.each(response,function(key,value){
-					available.push(key);
-				});
-				
-				$.each($(".radio-inline input[name='Product[packaging_id]']"),function(key,obj){
-					
-					if($.inArray(obj['value'],available)!=-1){
-						
-						$(this).parent().show();
-					}else{
-						$(this).parent().hide();
-					}
-				});
-
-				$(".radio-inline input[name='Product[packaging_id]']:visible:first").prop("checked", true);
-			}
-		});
-	});
-}*/
 
 function updatePackagings(){
-
 	suitableID = [];
 	var weight = $('#product-weight').val();
 	if($('#product-is_trackable').is(":checked")){
 		$.each(availablePackaging,function(key,obj){
-			
 			if(obj['type']=='track parcel' && (parseInt(obj['weight_offset'])>=weight)){
-				
 				suitableID.push(obj['id']);
 			}
 		});
@@ -195,10 +81,11 @@ function updatePackagings(){
 		});
 	}
 	//console.log(suitableID);
+
 	$.each($(".radio-inline input[name='Product[packaging_id]']"),function(key,obj){
-				
+
 		if($.inArray(obj['value'],suitableID)!=-1){
-			
+
 			$(this).parent().show();
 		}else{
 			$(this).parent().hide();
@@ -214,6 +101,7 @@ function createOtherAjax(indentifier){
 		$('#'+indentifier+'-form')[0].reset();
 		$('#loading-'+indentifier).hide();
 		$.pjax.reload({container: '#'+indentifier+'-selection'});
+
 	});
 	$('form#'+indentifier+'-form').on('beforeSubmit', function(){
 		var form = $(this);
@@ -244,4 +132,32 @@ function createOtherAjax(indentifier){
 	     return false;
 
 	});
+
+}
+
+// ajax upload main image file
+function uploadMainImage(files){
+	data = new FormData();
+	data.append("file", files['0']);
+	$.ajax({
+			data: data,
+			type: "POST",
+			//async: false,
+			url: 'http://uploads.im/api',
+			cache: false,
+			contentType: false,
+			processData: false,
+			success: function(url) {
+				if(url.status_code==200){
+					$('.progress-bar').html('100%').css('width','100%');
+					$('#main_image_ph').attr('src',url.data.img_url);
+					$('#product-main_image').val(url.data.img_url);
+					$.pjax.reload({container: '#product-image'});
+
+				}else{
+					$('.progress-bar').html('Error').css('width','100%').toggleClass('progress-bar-success').toggleClass('progress-bar-danger');
+				}
+			}
+	});
+
 }

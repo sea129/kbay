@@ -33,11 +33,11 @@ scriptLoader('http://templateassets.atspace.cc/ozsuperdeal/assets/js/zoom.min.js
 	<div class="container">
 		<div class="header">
 			<div class="logo">
-				<a href="#" title="OZ SUPER DEAL ebay store"><img src="http://i.imgur.com/2MzOHbf.png" width="235"></a>
+				<a href="http://stores.ebay.com.au/ozsuperdeal-sydney" title="OZ SUPER DEAL ebay store" target="_blank"><img src="http://sl.uploads.im/t/53FMf.png" width="235"></a>
 			</div>
 
 			<div class="search-container">
-				<form action="#" method="get" name="Search">
+				<form action="http://stores.ebay.com.au/ozsuperdeal-sydney" method="get" name="Search">
 				<input name="submit" type="submit" class="search-btn">
 				<input name="_nkw" type="text" class="search-field" placeholder="SEARCH">
 				</form>
@@ -51,27 +51,27 @@ scriptLoader('http://templateassets.atspace.cc/ozsuperdeal/assets/js/zoom.min.js
 	<div class="features">
 		<div class="container">
 			<div class="feature-section">
-			<img src="http://i.imgur.com/HE5MAFv.png">
+			<img src="http://sk.uploads.im/t/hZMIY.png">
 			<p>
-			<a href="#">Add OZ SUPER DEAL to<br>your favourite eBay Stores</a>
+			<a href="http://my.ebay.com.au/ws/eBayISAPI.dll?AcceptSavedSeller&sellerid=ozsuperdeal_sydney" target="_blank">Add OZ SUPER DEAL to<br>your favourite eBay Stores</a>
 			</p>
 			</div>
 			<div class="feature-section">
-			<img src="http://i.imgur.com/ZLQclU7.png">
+			<img src="http://sk.uploads.im/t/MKHEJ.png">
 			<p>
-			<a href="#">About our service</a>
+			<a href="http://stores.ebay.com.au/ozsuperdeal-sydney">More Shopping</a>
 			</p>
 			</div>
 			<div class="feature-section">
-			<img src="http://i.imgur.com/CTd5bGE.png">
+			<img src="http://sl.uploads.im/t/3sSL5.png">
 			<p>
-			<a href="#">Sign up to get news<br>about hot products<br>and deals</a>
+			<a href="http://my.ebay.com.au/ws/eBayISAPI.dll?AcceptSavedSeller&sellerid=ozsuperdeal_sydney" target="_blank">Sign up to get news<br>about hot products<br>and deals</a>
 			</p>
 			</div>
 			<div class="feature-section">
-			<img src="http://i.imgur.com/KBglpEA.png">
+			<img src="http://sl.uploads.im/t/yatnG.png">
 			<p>
-			<a href="#">Contact Us</a>
+			<a href="http://contact.ebay.com.au/ws/eBayISAPI.dll?FindAnswers&requested=ozsuperdeal-sydney&_trksid=p2050430.m2531.l4583&rt=nc" target="_blank">Contact Us</a>
 			</p>
 			</div>
 		</div>
@@ -81,7 +81,7 @@ scriptLoader('http://templateassets.atspace.cc/ozsuperdeal/assets/js/zoom.min.js
 		<div class="container">
 
 
-			<h3><?php echo $product->name; ?></h3>
+			<h3 id="p-title"></h3>
 			<div class="gallery">
 				<div class="zoom-section">
 					<div class="zoom-small-image">
@@ -107,18 +107,18 @@ scriptLoader('http://templateassets.atspace.cc/ozsuperdeal/assets/js/zoom.min.js
 				<div><?php echo $product->mini_desc; ?></div>
 
 				<div class="price-section">
-					<h2>$147.00</h2>
+					<h2></h2>
 					<script>
-						document.write ('<a target=\"_top\" href=\"http://offer.ebay.com.au/ws/eBayISAPI.dll?BinConfirm&amp;item=' + '111530977399' + '&amp;fromPage=2047675&amp;quantity=1&amp;fb=1" ><img src="http://i.imgur.com/wNXGJ7c.png" /></a>');
+						document.write ('<a target=\"_top\" href=\"http://offer.ebay.com.au/ws/eBayISAPI.dll?BinConfirm&amp;item=' + ebayItemID + '&amp;fromPage=2047675&amp;quantity=1&amp;fb=1" ><img src="http://sk.uploads.im/t/oEFuH.png" /></a>');
 					</script>
 					<script>
-						document.write ('<a target=\"_parent\" href=\"http://payments.ebay.com.au/ws/eBayISAPI.dll?ShopCartProcessor&item='+'111530977399'+'&atc=true&ssPageName=CART:ATC" title=\"Add to Cart\"><img src="http://i.imgur.com/znyFtgg.png" /></a>');
+						document.write ('<a target=\"_parent\" href=\"http://payments.ebay.com.au/ws/eBayISAPI.dll?ShopCartProcessor&item='+ ebayItemID +'&atc=true&ssPageName=CART:ATC" title=\"Add to Cart\"><img src="http://sk.uploads.im/t/3FzYw.png" /></a>');
 					</script>
 					<script>
-						document.write ("<a href='http://contact.ebay.com.au/ws1/eBayISAPI.dll?ShowEmailAuctionToFriend&item=" + '111530977399' + "' title='Tell a Friend' class='button_links' id='button_links' >Tell a Friend</a>");
+						document.write ("<a href='http://contact.ebay.com.au/ws1/eBayISAPI.dll?ShowEmailAuctionToFriend&item=" + ebayItemID + "' title='Tell a Friend' class='button_links' id='button_links' >Tell a Friend</a>");
 					</script>
 					<script>
-						document.write ("<a href='http://cgi1.ebay.com.au/ws/eBayISAPI.dll?MakeTrack&item=" + '111530977399' + "' title='Watch This Item' class='button_links' id='button_links' >Watch this Item</a>");
+						document.write ("<a href='http://cgi1.ebay.com.au/ws/eBayISAPI.dll?MakeTrack&item=" + ebayItemID + "' title='Watch This Item' class='button_links' id='button_links' >Watch this Item</a>");
 					</script>
 				</div>
 			</div> <!-- gallery detail end -->

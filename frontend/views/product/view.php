@@ -42,8 +42,8 @@ ProductViewAsset::register($this);
 
                 [
                     'attribute' => 'main_image',
-                    'format'=>'image',
-                    'value'=>Url::to(['/product/read-image','imageName'=>$model->main_image]),
+                    'format'=>'html',
+                    'value'=>"<img src='".$model->main_image."' width='200px'>",
                     'labelColOptions'=>['style' => 'width: 10%;display:none;'],
                     'valueColOptions'=>['id'=>'col-image','style' => 'display:none;'],
                   ],
@@ -254,14 +254,14 @@ ProductViewAsset::register($this);
 
                     <div style="margin-bottom:5px;<?php if($maxImageCount==0){ echo "display:none;"; } ?>">
 
-                    <p>Upload Images - <?php echo $maxImageCount ?> more images allowed</p>
+                    <p>Upload Images - <?php echo $maxImageCount ?> more images MAX size 200kb</p>
 
                     <?php echo FileInput::widget([
                                     'name' =>'pimages[]',
                                     'options' => ['id'=>'upload-listing-images-'.$key,'multiple' => true,'accept' => 'image/*'],
                                     'pluginOptions' => [
                                         'showPreview'=>false,
-                                        'maxFileSize'=>'150',
+                                        'maxFileSize'=>'200',
                                         'maxFileCount'=>$maxImageCount,
                                         'uploadAsync'=>false,
                                         //'showCancel'=>false,
@@ -312,7 +312,29 @@ ProductViewAsset::register($this);
                     <a target='_blank' href='<?php echo Url::to(['product/preview-desc','id'=>$model->id,'ebayID'=>$ebayAccountObj->id,]); ?>' class="btn btn-white btn-yellow btn-sm btn-block">Preview Template</a>
                     <a target='_blank' href='<?php echo Url::to(['product/generate-code','id'=>$model->id,'ebayID'=>$ebayAccountObj->id,]); ?>' class="btn btn-white btn-yellow btn-sm btn-block">Generate Code</a>
                     <button type='button' class="btn btn-white btn-yellow btn-sm btn-block pricetest">get price</button>
-
+                    <?php if(isset($listings[$ebayAccountObj->id])){ ?>
+                    <div class="listing-selling-info">
+                      <h6><?php echo $listings[$ebayAccountObj->id]['title']; ?></h6>
+                      <ul class="list-unstyled spaced">
+                        <li>
+													<i class="ace-icon fa fa-clock-o green"></i>
+													<?php echo $listings[$ebayAccountObj->id]['sync_at']; ?>
+												</li>
+                        <li>
+													<i class="ace-icon fa fa-barcode green"></i>
+													<?php echo $listings[$ebayAccountObj->id]['item_id']; ?>
+												</li>
+                        <li>
+													<i class="ace-icon fa fa-usd green"></i>
+													<?php echo $listings[$ebayAccountObj->id]['price']; ?>
+												</li>
+                        <li>
+													<i class="ace-icon fa fa-database green"></i>
+													<?php echo $listings[$ebayAccountObj->id]['qty']; ?> available / <?php echo $listings[$ebayAccountObj->id]['sold_qty']; ?> sold
+												</li>
+                      </ul>
+                    </div>
+                    <?php } ?>
                 </div>
             </div>
         </div>

@@ -4,7 +4,11 @@ namespace frontend\components\ebayapi;
 
 use Yii;
 use frontend\models\ebayaccounts\EbayAccount;
-
+use DTS\eBaySDK\Constants;
+use DTS\eBaySDK\Trading\Services;
+use DTS\eBaySDK\Trading\Types;
+use DTS\eBaySDK\Trading\Enums;
+use yii\web\NotFoundHttpException;
 class EbayApi
 {
 	const COMPATABILITY_LEVEL = 941;
@@ -23,23 +27,29 @@ class EbayApi
 
 	const SITE_ID = 15;
 
-	public $tokens;
+	protected $token;
 
-	public $ebayID;
+	//public $ebayID;
 
 	public function __construct($ebayID = null){
-		//$this->tokens = [];
-		$this->ebayID = $ebayID;
-		if($this->ebayID == null){//所有ebay
-			$ebayAccArray = EbayAccount::find()->allOfCurrentUser($db = null);
-			
-			foreach ($ebayAccArray as $ebayAccModel) {
-				$this->tokens[$ebayAccModel->seller_id] = $ebayAccModel->token;
-			}
-		}else{//一个ebay
-			$ebayAcc = EbayAccount::findOne($this->ebayID);
-			$this->tokens=$ebayAcc->token;
+		if($ebayID!==null && $ebayAcc = EbayAccount::findOne(['id'=>$ebayID,'user_id'=>Yii::$app->user->id])){
+			$this->token = $ebayAcc->token;
+		}else{
+			throw new NotFoundHttpException('The requested page does not exist.');
+			$this->token = null;
 		}
+		//$this->tokens = [];
+		// $this->ebayID = $ebayID;
+		// if($this->ebayID == null){//所有ebay
+		// 	$ebayAccArray = EbayAccount::find()->allOfCurrentUser($db = null);
+		//
+		// 	foreach ($ebayAccArray as $ebayAccModel) {
+		// 		$this->tokens[$ebayAccModel->seller_id] = $ebayAccModel->token;
+		// 	}
+		// }else{//一个ebay
+		// 	$ebayAcc = EbayAccount::findOne(['id'=>$this->ebayID,'user_id'=>Yii::$app->user->id]);
+		// 	$this->tokens=$ebayAcc->token;
+		// }
 		//$this->tokens='1';
 	}
 
@@ -48,7 +58,7 @@ class EbayApi
 		$verb = 'FetchToken';
 		$requestBody = '<?xml version="1.0" encoding="utf-8" ?>';
         $requestBody .= '<FetchTokenRequest xmlns="urn:ebay:apis:eBLBaseComponents">';
-       
+
         $requestBody .= "<SessionID>$theID</SessionID>";
         $requestBody .= '</FetchTokenRequest>';
 
@@ -60,22 +70,15 @@ class EbayApi
 			throw new NotFoundHttpException();
 
 		$resp = simplexml_load_string($responseBody);
-		/*echo "<pre>";
-		print_r($resp);
-		echo "</pre>";
-		exit();*/
 		$token = (string)$resp->eBayAuthToken;
 		$expirationTime = (string)$resp->HardExpirationTime;
-		/*$ebayAcc = \common\models\EbayAccount::find()->where(['id'=>$session->get('ebay_id')])->one();
-		$ebayAcc->token = $token;
-		$ebayAcc->save();*/
 		if($resp->Ack=='Success')
         {
         	return [$token,$expirationTime];
         }else{
         	return false;
         }
-		
+
 	}
 
 	public function getSessionID(){
@@ -87,7 +90,7 @@ class EbayApi
 		$requestBody .= '</GetSessionIDRequest>';
 
 		$sessN = new EbaySession(self::DEV_ID, self::APP_ID, self::CERT_ID, self::SERVER_URL, self::COMPATABILITY_LEVEL, 15, $verb);
-    	
+
     	$responseBody = $sessN->sendHttpRequest($requestBody);
 
     	if(stristr($responseBody, 'HTTP 404') || $responseBody == '')
@@ -106,7 +109,32 @@ class EbayApi
         	return false;
         }
 	}
+	protected function tradingServiceInit(){
+		return new Services\TradingService(array(
+		    'apiVersion' => self :: COMPATABILITY_LEVEL,
+		    'siteId' => self :: SITE_ID,
+		));
+	}
+	protected function getOfficialTime(){
+		$service = $this->tradingServiceInit();
+    $request = new Types\GeteBayOfficialTimeRequestType();
+    $request->RequesterCredentials = new Types\CustomSecurityHeaderType();
+    $request->RequesterCredentials->eBayAuthToken = $this->token;
+    $response = $service->geteBayOfficialTime($request);
+    return $response->Timestamp;
+	}
 
+	protected function getResponseError($response){
+		$result = [];
+		if (isset($response->Errors)) {
+				foreach ($response->Errors as $error) {
+					//$result[($error->SeverityCode === Enums\SeverityCodeType::C_ERROR ? 'Error' : 'Warning')][]=['ShortMessage'=>$error->ShortMessage,'LongMessage'=>$error->LongMessage,];
+					$result['Error'][]=$error->ShortMessage;
+				}
+
+		}
+		return $result;
+	}
 }
 
  ?>

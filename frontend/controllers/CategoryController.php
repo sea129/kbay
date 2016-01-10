@@ -50,9 +50,11 @@ class CategoryController extends Controller
      */
     public function actionView($id)
     {
-        return $this->render('view', [
-            'model' => $this->findModel($id),
-        ]);
+      $model=$this->findModel($id);
+
+      return $this->render('view', [
+          'model' => $model,
+      ]);
     }
 
     /**
@@ -71,22 +73,22 @@ class CategoryController extends Controller
             }else{
                 return Json::encode([false,$model->errors]);
             }
-            
-            
+
+
         }
-        
-              
-        
-    
+
+
+
+
        if ($model->load(Yii::$app->request->post()) && $model->save()) {
             return $this->redirect(['view', 'id' => $model->id]);
         } else {
             return $this->render('create', [
                 'model' => $model,
             ]);
-        } 
-        
-        
+        }
+
+
     }
 
     public function actionValidateCreate()
@@ -125,9 +127,11 @@ class CategoryController extends Controller
      */
     public function actionDelete($id)
     {
-        $this->findModel($id)->delete();
+      $model=$this->findModel($id);
 
-        return $this->redirect(['index']);
+      $model->delete();
+
+      return $this->redirect(['index']);
     }
 
     /**
@@ -139,7 +143,7 @@ class CategoryController extends Controller
      */
     protected function findModel($id)
     {
-        if (($model = Category::findOne($id)) !== null) {
+        if (($model = Category::findOne($id)) !== null && Yii::$app->user->can('ebaycontrol',['userID'=>$model->user_id])) {
             return $model;
         } else {
             throw new NotFoundHttpException('The requested page does not exist.');
@@ -150,13 +154,13 @@ class CategoryController extends Controller
         if(Yii::$app->request->isAjax){
             Yii::$app->response->format = Response::FORMAT_JSON;
             $post = Yii::$app->request->post();
-            
+
             if(($model=Category::findOne($post['id']))===null){
                 return 'error';
             }else{
                 return $model->code;
             }
-            
+
         }
     }
 }

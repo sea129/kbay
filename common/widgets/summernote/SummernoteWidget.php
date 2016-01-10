@@ -1,4 +1,4 @@
-<?php 
+<?php
 namespace common\widgets\summernote;
 
 use yii\helpers\Html;
@@ -16,7 +16,7 @@ class SummernoteWidget extends \yii\widgets\InputWidget
             'theme' => 'monokai'
         ],
 
-       
+
 
     ];
     /** @var array */
@@ -41,7 +41,7 @@ class SummernoteWidget extends \yii\widgets\InputWidget
      */
     public function run()
     {
-        
+
         echo $this->hasModel()
             ? Html::activeTextarea($this->model, $this->attribute, $this->options)
             : Html::textarea($this->name, $this->value, $this->options);
@@ -51,8 +51,8 @@ class SummernoteWidget extends \yii\widgets\InputWidget
             ? null
             : Json::encode($this->clientOptions);
         $this->getView()->registerJs('jQuery( "#' . $this->options['id'] . '" ).summernote(' . $clientOptions . ');');
-    	
+
     }
-   
+
 }
 ?>

@@ -19,22 +19,22 @@ AceAsset::register($this);
         <?php $this->head() ?>
     </head>
     <body class="no-skin">
-    
+
         <?php $this->beginBody() ?>
         <?= $this->render('//layouts/_navbar') ?>
-        
+
         <div class="main-container" id="main-container">
             <?= $this->render('//layouts/_sidebar') ?>
-            
+
             <div class="main-content">
-                <?= $this->render('//layouts/_breadcrumbs') ?>
+                <?php //echo = $this->render('//layouts/_breadcrumbs') ?>
                 <div class="page-content">
                     <div class="row">
                       <div class="col-xs-12">
                        <?= $content ?>
                       </div><!-- /.col -->
                     </div><!-- /.row -->
-                    
+
 
                 </div>
             </div>

@@ -24,7 +24,7 @@ $(function(){
 		        formList(result.added,$('#added-sku ul'));
 		        formList(result.deleted,$('#deleted-sku ul'));
 		        //console.log(result.updated.length);
-		        
+
 		    },
 		    error: function( xhr, status, errorThrown ) {
 		        alert( "Sorry, there was a problem!" );
@@ -32,17 +32,14 @@ $(function(){
 		        console.log( "Status: " + status );
 		        console.dir( xhr );
 		    },
-
-
-
-		});
+			});
 	});
 
 });
 
 function progressbar(width){
 	//$('#ajax-progress').css("width",width+"%");
-	
+
 	if(flag && (width<80)){
 		$('#ajax-progress').css("width",width+"%");
 		//width=width+Math.floor((Math.random() * 15) + 1);
@@ -50,8 +47,8 @@ function progressbar(width){
 		setTimeout(function(){progressbar(width)},40);
 		//alert(width);
 	}
-	
-	
+
+
 }
 
 function formList(array,ul){
@@ -61,5 +58,5 @@ function formList(array,ul){
 			.append(array[i])
 	        .appendTo(ul);
 	});
-	
+
 }

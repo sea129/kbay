@@ -16,7 +16,7 @@ use yii\widgets\ActiveForm;
 
     <?= $form->field($model, 'store_id')->textInput(['maxlength' => true]) ?>
 
-    <?= $form->field($model, 'user_id')->textInput() ?>
+    <?php //= $form->field($model, 'user_id')->textInput() ?>
 
     <?= $form->field($model, 'shipping_info')->textarea(['rows' => 6]) ?>
 
@@ -28,9 +28,9 @@ use yii\widgets\ActiveForm;
 
     <?= $form->field($model, 'listing_template_id')->textInput() ?>
 
-    <?= $form->field($model, 'token')->textarea(['rows' => 6]) ?>
+    <?php //= $form->field($model, 'token')->textarea(['rows' => 6]) ?>
 
-    <?= $form->field($model, 'token_expiration')->textInput() ?>
+    <?php //= $form->field($model, 'token_expiration')->textInput() ?>
 
     <?= $form->field($model, 'email')->textInput(['maxlength' => true]) ?>
 

@@ -52,7 +52,7 @@ $this->params['breadcrumbs'][] = $this->title;
 </div>
 
 
-<?php 
+<?php
     $this->registerCss(".infobox{
         width:280px;
     }");
@@ -103,16 +103,16 @@ $this->params['breadcrumbs'][] = $this->title;
                             <button class="btn btn-lg btn-success" id='sync-button' data-toggle="modal" data-target="#progress">
                                 <i class="ace-icon fa fa-refresh"></i>
                                 Sync Now
-                            </button>
+                            </button>>
                         </div>
                     </div>
-                    
+
                 </div>
             </div>
         </div>
     </div>
 </div>
-<?php 
+<?php
     Modal::begin([
         'header' => 'Synchronizing - Getting Listing info from Ebay Account : <h4 class="smaller lighter red">'.$model->seller_id.'</h4>',
         'options' =>['id'=>'progress'],
@@ -135,7 +135,7 @@ $this->params['breadcrumbs'][] = $this->title;
                 <div class="infobox-icon">
                     <i class="ace-icon fa fa-download"></i>
                 </div>
-            
+
                 <div class="infobox-data">
                     <div class="infobox-content">Added Listing NO.</div>
                     <span class="infobox-data-number" id="added-listings"><i class="ace-icon fa fa-spinner fa-spin orange bigger-125"></i></span>
@@ -144,7 +144,7 @@ $this->params['breadcrumbs'][] = $this->title;
             <div class="widget-box">
                 <div class="widget-body" id="added-sku">
                     <ul class="list-unstyled">
-                        
+
                     </ul>
                 </div>
             </div>
@@ -162,7 +162,7 @@ $this->params['breadcrumbs'][] = $this->title;
             <div class="widget-box">
                 <div class="widget-body" id="updated-sku">
                     <ul class="list-unstyled">
-                        
+
                     </ul>
                 </div>
             </div>
@@ -181,7 +181,7 @@ $this->params['breadcrumbs'][] = $this->title;
             <div class="widget-box">
                 <div class="widget-body" id="deleted-sku">
                     <ul class="list-unstyled">
-                        
+
                     </ul>
                 </div>
             </div>
@@ -189,5 +189,3 @@ $this->params['breadcrumbs'][] = $this->title;
     </div>
    <?php Modal::end();
  ?>
-
-

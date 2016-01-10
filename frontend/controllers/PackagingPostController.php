@@ -48,9 +48,9 @@ class PackagingPostController extends Controller
      */
     public function actionView($id)
     {
-        return $this->render('view', [
-            'model' => $this->findModel($id),
-        ]);
+      return $this->render('view', [
+          'model' => $this->findModel($id),
+      ]);
     }
 
     /**
@@ -113,7 +113,7 @@ class PackagingPostController extends Controller
      */
     protected function findModel($id)
     {
-        if (($model = PackagingPost::findOne($id)) !== null) {
+        if (($model = PackagingPost::findOne($id)) !== null && Yii::$app->user->can('ebaycontrol',['userID'=>$model->user_id])) {
             return $model;
         } else {
             throw new NotFoundHttpException('The requested page does not exist.');

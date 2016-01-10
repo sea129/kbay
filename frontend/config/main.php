@@ -13,6 +13,11 @@ return [
     //'privateImagesPath' => dirname(__DIR__).'/private-images/',
     'bootstrap' => ['log'],
     'controllerNamespace' => 'frontend\controllers',
+    'modules' => [
+        'gridview' => [
+            'class' => '\kartik\grid\Module',
+        ],
+    ],
     'components' => [
         'user' => [
             'identityClass' => 'common\models\User',
@@ -57,10 +62,10 @@ return [
                 ],
             ],
         ],
-        /*'assetManager' => [
-            'class' => 'yii\web\AssetManager',
-            'forceCopy' => true,
-        ],*/
+        // 'assetManager' => [
+        //     'class' => 'yii\web\AssetManager',
+        //     'forceCopy' => true,
+        // ],
     ],
     'params' => $params,
 ];

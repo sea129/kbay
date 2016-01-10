@@ -44,9 +44,9 @@ use frontend\models\listingimages\ListingImages;
 class Product extends \frontend\models\base\MyActiveRecord
 {
 
+    const SCENARIO_BATCH = 'batch';
+    const SCENARIO_SINGLE = 'single';
 
-
-    public $listingTmpImage;
 
     /**
      * @inheritdoc
@@ -73,29 +73,28 @@ class Product extends \frontend\models\base\MyActiveRecord
     public function rules()
     {
         return [
-            [['sku', 'user_id', 'supplier_id', 'packaging_id', 'is_trackable', 'qty_per_order','stock_location','weight','cost','name'], 'required'],
+            [['sku', 'user_id', 'supplier_id', 'packaging_id', 'is_trackable', 'qty_per_order','stock_location','weight','cost','name','main_image'], 'required'],
             [['mini_desc', 'description', 'specs', 'comment'], 'string'],
-            [['stock_qty', 'category_id', 'user_id', 'supplier_id', 'packaging_id', 'weight', 'is_trackable', 'qty_per_order'], 'integer'],
+            [['category_id', 'user_id', 'supplier_id', 'packaging_id', 'weight', 'is_trackable', 'qty_per_order'], 'integer'],
             [['cost'], 'number'],
             [['sku', 'stock_location'], 'string', 'max' => 64],
             [['name'], 'string', 'max' => 128],
             [['category_id'],'exist','targetClass'=>Category::className(),'targetAttribute'=>'id','message' => Yii::t('app/category', 'The category does not exist')],
             [['supplier_id'],'exist','targetClass'=>Supplier::className(),'targetAttribute'=>'id','message' => Yii::t('app/supplier', 'The Supplier does not exist')],
             [['stock_location'],'exist','targetClass'=>StockLocation::className(),'targetAttribute'=>'code','message' => Yii::t('app/supplier', 'The StockLocation does not exist')],
-            [['sku', 'user_id'], 'unique', 'targetAttribute' => ['sku', 'user_id'], 'message' => 'The combination of Sku and User ID has already been taken.'],
-            [['name', 'user_id'], 'unique', 'targetAttribute' => ['name', 'user_id'], 'message' => 'The combination of Name and User ID has already been taken.'],
-            ['main_image', 'file', 'extensions'=>'jpg, gif, png'],
-            [['main_image'], 'safe'],
-            ['main_image','compare','compareValue' => false, 'operator' => '!=','message'=>'Please upload image first'],
-            //['name','unique'],
-            ['listingTmpImage','file','skipOnEmpty' => false,'extensions'=>'png,jpg','maxSize'=>'100000','on' => 'upTmpLstImage'],
+            [['sku', 'user_id'], 'unique', 'targetAttribute' => ['sku', 'user_id'], 'message' => 'SKU has already been taken.'],
+            [['name', 'user_id'], 'unique', 'targetAttribute' => ['name', 'user_id'], 'message' => 'Name has already been taken.'],
+            ['qty_per_order','compare','compareValue'=>1,'operator'=>'==','on'=>self::SCENARIO_SINGLE],
+            ['qty_per_order','compare','compareValue' => 1, 'operator'=>'>','on'=>self::SCENARIO_BATCH],
+            ['stock_qty','integer','on'=>self::SCENARIO_SINGLE],
+            ['stock_qty','compare','compareValue' => null, 'operator'=>'==','on'=>self::SCENARIO_BATCH],
+
         ];
     }
 
     public function scenarios()
     {
         $scenarios = parent::scenarios();
-        $scenarios['upTmpLstImage'] = ['listingTmpImage'];
         return $scenarios;
     }
     /**
@@ -219,42 +218,6 @@ class Product extends \frontend\models\base\MyActiveRecord
         return $ebayAcc;
     }
 
-    /*public function getCategories()
-    {
-        $categoryArray = Category::find()->allOfUser(Yii::$app->user->id,$db = null);
-
-        $categoryArrayP = [];
-        foreach ($categoryArray as $value) {
-            $categoryArrayP[$value['id']] = $value['name'];
-        }
-
-        return $categoryArrayP;
-    }*/
-
-    /*public function getStockLocations()
-    {
-        $StockLocationArray = StockLocation::find()->allOfUser(Yii::$app->user->id,$db = null);
-
-        $StockLocationArrayP = [];
-        foreach ($StockLocationArray as $value) {
-            $StockLocationArrayP[$value['code']] = $value['code'];
-        }
-
-        return $StockLocationArrayP;
-    }
-
-    public function getSuppliers()
-    {
-        $SupplierArray = Supplier::find()->allOfUser(Yii::$app->user->id,$db = null);
-
-        $SupplierArrayP = [];
-        foreach ($SupplierArray as $value) {
-            $SupplierArrayP[$value['id']] = $value['name'];
-        }
-
-        return $SupplierArrayP;
-    }*/
-
     private function getDropdownArray($model,$key,$label){
         $objArray = $model::find()->allOfUser(Yii::$app->user->id,$db = null);
 
@@ -266,9 +229,17 @@ class Product extends \frontend\models\base\MyActiveRecord
         return $dropdownArray;
     }
 
+
     public function getCategories()
     {
-        return $this->getDropdownArray('frontend\models\category\Category','id','name');
+      $objArray = \frontend\models\category\Category::find()->allOfUser(Yii::$app->user->id,$db = null);
+      $dropdownArray = [];
+      $optionArray=[];
+      foreach ($objArray as $value) {
+          $dropdownArray[$value['id']] = $value['name'];
+          $optionArray[$value['id']]=['data-cat-code'=>$value['code']];
+      }
+      return ['dropdown'=>$dropdownArray,'option'=>$optionArray];
     }
 
     public function getStockLocations()
@@ -309,9 +280,6 @@ class Product extends \frontend\models\base\MyActiveRecord
             $this->listingTmpImage->saveAs($folder. substr(str_shuffle(MD5(microtime())), 0, 8). '.' . $this->listingTmpImage->extension);
             return true;
         }
-    }
-    public function ftpUpLstImages($file){
-         $ftp = new \yii2mod\ftp\FtpClient();
     }
 
     public function getEbayLstImgs(){

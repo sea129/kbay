@@ -43,13 +43,14 @@ class EbayTransaction extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['transaction_id', 'ebay_order_id', 'item_id', 'item_title', 'qty_purchased', 'status', 'variation'], 'required'],
-            [['ebay_order_id', 'item_id', 'qty_purchased', 'status', 'sale_record_number', 'variation'], 'integer'],
-            [['created_date', 'paid_time', 'shipped_time'], 'safe'],
+            [['transaction_id', 'ebay_order_id', 'item_id', 'item_title', 'qty_purchased'], 'required'],
+            [['ebay_order_id', 'item_id', 'qty_purchased', 'sale_record_number'], 'integer'],
+            [['created_date'], 'safe'],
             [['final_value_fee', 'transaction_price'], 'number'],
             [['transaction_id'], 'string', 'max' => 32],
             [['buyer_email', 'item_sku', 'tracking_number', 'shipping_carrier'], 'string', 'max' => 64],
-            [['item_title'], 'string', 'max' => 132]
+            [['item_title'], 'string', 'max' => 132],
+            [['variation', 'image'], 'string', 'max' => 256]
         ];
     }
 
@@ -67,10 +68,7 @@ class EbayTransaction extends \yii\db\ActiveRecord
             'item_id' => Yii::t('app/order', 'Item ID'),
             'item_sku' => Yii::t('app/order', 'Item Sku'),
             'item_title' => Yii::t('app/order', 'Item Title'),
-            'paid_time' => Yii::t('app/order', 'Paid Time'),
-            'qty_purchased' => Yii::t('app/order', 'Qty Puchased'),
-            'status' => Yii::t('app/order', 'Status'),
-            'shipped_time' => Yii::t('app/order', 'Shipped Time'),
+            'qty_purchased' => Yii::t('app/order', 'Qty Purchased'),
             'sale_record_number' => Yii::t('app/order', 'Sale Record Number'),
             'tracking_number' => Yii::t('app/order', 'Tracking Number'),
             'shipping_carrier' => Yii::t('app/order', 'Shipping Carrier'),

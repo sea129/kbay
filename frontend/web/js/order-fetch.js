@@ -1,45 +1,45 @@
 $(function(){
+
   fetchInit();
   $('#btn-main-fetch').click(function(){
-    $(this).addClass('disabled');
+    $(this).addClass('disabled').prop('disabled', true);
     fetch(1, ebayID, totalPages);
     $('#fetch-progress-bar').fadeIn();
   });
 
-  $('#test-time').click(function(){
-    $.ajax({
-      url: 'time',
-      type: 'post',
-      data: {ebayID:3}
-    })
-    .done(function(result) {
-      console.log(result);
-    })
-    .fail(function() {
-      console.log("error");
-    })
-    .always(function() {
-      console.log("complete");
-    });
+  // $('#batch-label').click(function(){
+  //   //var keys = $('#main-grid').yiiGridView('getSelectedRows');
+  //   var selection = $('.check-selection:checked').map(function(){
+  //     return $(this).val();
+  //   }).get();
+  //   ajax
+  // });
 
-  });
 });
 
 function fetchInit(){
   ebayID = false;
   OrderCount = 0;
   totalPages = 0;
-  buyerID = [];
+  saveLog = true;
+  savingError = [];
   $('#pre-fetch-loading').show();
-  $('#btn-main-fetch').removeClass('disabled');
+  $('#btn-main-fetch').removeClass('disabled').prop('disabled', false).hide();
+  $('#no-orders').html('');
+  $('#fetch-progress-bar').hide();
+  $('#fetch-progress-bar .progress-bar').width('0%').html('0%');
 }
 
 function closeSyncModal(e){
   fetchInit();
   $('.notice-board').hide();
   $('.notice-board .message').html('');
-  $('.notice-board .alert').toggleClass('alert-danger').fadeOut();
-  $('.notice-board .alert').toggleClass('alert-success').fadeOut();
+  $('.notice-board .alert').removeClass('alert-danger').fadeOut();
+  $('.notice-board .alert').removeClass('alert-success').fadeOut();
+  $('#saving-error').hide();
+  $('#saving-error ul').html('');
+  $('#saving-error p').html('Completed!');
+  location.reload();
 }
 
 function preFetchModal(e){
@@ -75,6 +75,7 @@ function preFetchModal(e){
     }
 
 
+
     //console.log(result);
     // if(result.status==='success'){
     //
@@ -103,20 +104,27 @@ function fetch(pageNumber,ebayID,totalPages){
     })
     .done(function(result) {
       if(result.status==='success'){
-        console.log(result.buyerID);
+
         progressBar(Math.floor((pageNumber/totalPages)*100));
         pageNumber++;
+        if(typeof result.savingError !== 'undefined'){
 
+          $.each(result.savingError,function(index,errors){
+            //console.log(errors.ebay_order_id);
+
+            if(errors.ebay_order_id === undefined){
+              saveLog = false;
+            }
+            $.each(errors,function(index,error){
+              savingError.push(error[0]);
+            });
+          });
+
+        }
         fetch(pageNumber,ebayID,totalPages);
         //return true;
       }else{
-        if(typeof result.savingError !== 'undefined'){
-          $.each(result.savingError,function(index,errors){
-            $.each(errors,function(index,error){
-              result.message+=" - "+error[0];
-            });
-          });
-        }
+
 
         $('.notice-board .message').html(result.message);
         $('.notice-board .alert').toggleClass('alert-danger').fadeIn();
@@ -133,6 +141,35 @@ function fetch(pageNumber,ebayID,totalPages){
       //console.log("complete");
     });
   }else{
-    console.log(buyerID);
+    if(saveLog){
+      $.ajax({
+        url: 'save-log',
+        type: 'POST',
+        data: {ebayID:ebayID}
+      })
+      .done(function(result) {
+        if(result){
+          progressBar(100);
+          $('#saving-error p').append('<br/>order log status update to DONE!');
+        }else{
+          $('#saving-error p').append('<br/>order log status ERROR while updating!');
+        }
+      })
+      .fail(function() {
+        //console.log("error");
+      })
+      .always(function() {
+        //console.log("complete");
+      });
+
+    }
+    if(savingError.length>0){
+      $.each(savingError,function(index,error){
+        $('#saving-error ul').append("<li><i class='ace-icon fa fa-times bigger-110 red'></i>"+error+"</li>");
+      });
+      $('#error-scroll').ace_scroll({size:125});
+
+    }
+    $('#saving-error').show();
   }
 }

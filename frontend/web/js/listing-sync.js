@@ -2,7 +2,7 @@ $(function(){
   syncInit();
   $('#btn-main-sync').click(function(){
     Sync(ebayID);
-    $(this).addClass('disabled');
+    $(this).addClass('disabled').prop('disabled', true);
     $('#sync-progress-bar').fadeIn();
   });
 });
@@ -14,7 +14,7 @@ function syncInit()
   ebayID = false;
   syncListings = [];
   noSKUListings = [];
-  $('#btn-main-sync').removeClass('disabled');
+  $('#btn-main-sync').removeClass('disabled').prop('disabled', false);
 }
 function closeSyncModal(e){
   syncInit();
@@ -28,7 +28,7 @@ function closeSyncModal(e){
   $('#sync-progress-bar .progress-bar').width('0%').html('0%');
   $('.notice-board').hide();
   $('.notice-board .message').html('');
-  $('.notice-board .alert').toggleClass('alert-danger').fadeIn();
+  $('.notice-board .alert').removeClass('alert-danger').fadeIn();
   $('#empty-sku-list').hide();
   $('#empty-sku-list ul').html('');
 }

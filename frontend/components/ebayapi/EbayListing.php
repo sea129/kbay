@@ -39,6 +39,17 @@ class EbayListing extends EbayApi
 		return $request;
 	}
 
+	public function getItemPicUrl($itemID){
+		$service = $this->tradingServiceInit();
+		$itemRequest = $this->getItemReqInit();
+		$itemRequest->ItemID = $itemID;
+		$reqItem = $service->getItem($itemRequest);
+		if ($reqItem->Ack !== 'Failure' && isset($reqItem->Item)) {
+			return $reqItem->Item->PictureDetails->GalleryURL;
+		}else{
+			return "error";
+		}
+	}
 	/**
 	 * return listing info on that page based on pagenumber just one ebay api virtual page
 	 */

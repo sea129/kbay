@@ -39,10 +39,10 @@ use kartik\grid\GridView;
            Total
          </td>
          <td>
-           Paid Time
+           eBay TransactionID
          </td>
          <td>
-           eBay TransactionID
+           Tracking
          </td>
        </tr>
      <?php foreach ($transactions as $transaction) { ?>
@@ -52,11 +52,16 @@ use kartik\grid\GridView;
            <?php echo $transaction->sale_record_number; ?>
          </td>
          <td class="center">
-           <img src="<?php echo $transaction->image; ?>" alt="" />
+           <?php if(isset($transaction->image)){ ?>
+              <img src="<?php echo $transaction->image; ?>" alt="" style="max-width:150px;max-height:150px;"/>
+           <?php  }else{ ?>
+             <button class="btn btn-danger get_image" data-transactionid="<?php echo $transaction->transaction_id; ?>" data-item="<?php echo $transaction->item_id ?>" data-ebayid="<?php echo $model->ebay_id ?>" ><i class="ace-icon fa fa-refresh  bigger-110 icon-only"></i></button>
+          <?php } ?>
+           <!-- <img src="<?php //echo $model->getItemPicUrl($transaction->item_id); ?>" alt="" style="max-width:150px;max-height:150px;"/> -->
          </td>
          <td class="">
-           <?php echo $transaction->item_id; ?><br>
-           <?php echo $transaction->item_sku; ?><br>
+           <?php echo $transaction->item_id; ?><br><br>
+           <?php echo $transaction->item_sku; ?><br><br>
            <?php echo $transaction->item_title; ?>
          </td>
          <td class="right">
@@ -66,10 +71,11 @@ use kartik\grid\GridView;
            <?php echo $transaction->transaction_price; ?>
          </td>
          <td>
-           <?php echo $transaction->paid_time; ?>
+           <?php echo $transaction->transaction_id; ?>
          </td>
          <td>
-           <?php echo $transaction->transaction_id; ?>
+           <?php echo $transaction->tracking_number; ?><br>
+           <?php echo $transaction->shipping_carrier; ?>
          </td>
        </tr>
 

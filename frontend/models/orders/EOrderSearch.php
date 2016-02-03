@@ -18,8 +18,8 @@ class EOrderSearch extends EOrder
     public function rules()
     {
         return [
-            [['id', 'type', 'status', 'ebay_id', 'user_id'], 'integer'],
-            [['total','fetched_at', 'ebay_order_id', 'ebay_seller_id', 'buyer_id', 'created_time', 'paid_time', 'recipient_name', 'recipient_phone', 'recipient_address1', 'recipient_address2', 'recipient_city', 'recipient_state', 'recipient_postcode', 'checkout_message','sale_record_number'], 'safe'],
+            [['id', 'status', 'ebay_id', 'user_id'], 'integer'],
+            [['total','fetched_at', 'ebay_order_id', 'ebay_seller_id', 'buyer_id', 'created_time','shipped_time', 'paid_time', 'recipient_name', 'recipient_phone', 'recipient_address1', 'recipient_address2', 'recipient_city', 'recipient_state', 'recipient_postcode', 'checkout_message','sale_record_number'], 'safe'],
         ];
     }
 
@@ -31,7 +31,10 @@ class EOrderSearch extends EOrder
         // bypass scenarios() implementation in the parent class
         return Model::scenarios();
     }
-
+    public function searchNotLabel()
+    {
+      $query = EOrder::find()->where(['label'=>0,'status'=>0])->all();
+    }
     /**
      * Creates data provider instance with search query applied
      *
@@ -105,6 +108,17 @@ class EOrderSearch extends EOrder
             $endDate->setTimezone(new \DateTimeZone('GMT'))->format('Y-m-d H:i:s');
             $endDate = $endDate->format('Y-m-d H:i:s');
             $query->andFilterWhere(['between','paid_time',$startDate,$endDate]);
+          }
+        }
+        if ($this->shipped_time && $dateRange = explode(" - ",$this->shipped_time)) {
+          if(isset($dateRange[0])&&isset($dateRange[1])){
+            $startDate = new \DateTime($dateRange[0],new \DateTimeZone('Australia/Sydney'));
+            $endDate = new \DateTime($dateRange[1],new \DateTimeZone('Australia/Sydney'));
+            $startDate->setTimezone(new \DateTimeZone('GMT'))->format('Y-m-d H:i:s');
+            $startDate = $startDate->format('Y-m-d H:i:s');
+            $endDate->setTimezone(new \DateTimeZone('GMT'))->format('Y-m-d H:i:s');
+            $endDate = $endDate->format('Y-m-d H:i:s');
+            $query->andFilterWhere(['between','shipped_time',$startDate,$endDate]);
           }
         }
         return $dataProvider;

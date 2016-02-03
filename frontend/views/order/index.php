@@ -12,6 +12,27 @@ use frontend\models\ebayaccounts\EbayAccount;
 $this->title = Yii::t('app/order', 'Eorders');
 $this->params['breadcrumbs'][] = $this->title;
 ?>
+<button class="btn btn-warning btn-xlg" id="packing-label" style=''><?php echo Yii::t('app/order', 'Packing Label', []); ?></button>
+<?php
+  $this->registerJs("$(document).ready(function() {
+    $('.get_image').click(function(){
+      imgContainer = $(this).parent();
+      $(this).hide();
+      $.ajax({
+        url: '/order/item-pic',
+        type: 'POST',
+        data: {ebayID:$(this).data('ebayid'),itemID:$(this).data('item'),transactionID:$(this).data('transactionid')}
+      })
+      .done(function(result) {
+        imgContainer.html('<img src='+result+' style=\'max-width:150px;max-height:150px;\' >');
+      })
+      .fail(function() {
+      })
+      .always(function() {
+      });
+    });
+  });");
+ ?>
 <div class="eorder-index">
 
     <h1><?= Html::encode($this->title) ?></h1>
@@ -123,6 +144,22 @@ $this->params['breadcrumbs'][] = $this->title;
 
               },
             ],
+            [
+              'attribute'=>'shipped_time',
+              'label'=>Yii::t('app/order', 'Shipped Time', []),
+              'filterType'=>GridView::FILTER_DATE_RANGE,
+              //'format'=>'date',
+              'value'=>function($model, $key, $index, $column){
+                if($model['shipped_time']){
+                  $date = new DateTime($model['shipped_time'],new DateTimeZone('GMT'));
+                  $date->setTimezone(new DateTimeZone('Australia/Sydney'));
+                  return $date->format('Y-m-d H:i:s');
+                }else{
+                  return null;
+                }
+
+              },
+            ],
              //'created_time',
             // 'paid_time',
             // 'recipient_name',
@@ -134,7 +171,7 @@ $this->params['breadcrumbs'][] = $this->title;
             // 'recipient_postcode',
             // 'checkout_message',
 
-            ['class' => 'yii\grid\ActionColumn'],
+            //['class' => 'yii\grid\ActionColumn'],
         ],
     ]); ?>
 

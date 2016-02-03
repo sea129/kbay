@@ -54,6 +54,7 @@ class EbayOrder extends EbayApi
     $result=$this->getResponseError($response);
     if($response->Ack!=='Failure' && isset($response->OrderArray)){
       $result['orders']=$response->OrderArray->Order;
+      $result['hasMoreOrders']=$response->HasMoreOrders;
     }else{
       $result['Error'][]=\Yii::t('app/listing', 'connect Failure', []);
     }
@@ -69,6 +70,7 @@ class EbayOrder extends EbayApi
     $request->CreateTimeTo =  $createTo;
     $request->OrderStatus = 'Completed';
     $request->OrderRole = 'Seller';
+    $request->IncludeFinalValueFee = true;
 
 
     return $request;

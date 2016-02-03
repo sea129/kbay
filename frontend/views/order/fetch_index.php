@@ -9,11 +9,27 @@ $this->title = Yii::t('app/order', 'Order Fetch Log');
 $this->params['breadcrumbs'][] = $this->title;
 OrderFetchAsset::register($this);
 ?>
-<button class="btn btn-warning btn-xlg" id="test-time" style=''><?php echo Yii::t('app/order', 'TIme', []); ?></button>
+<?php
+  echo Html::beginForm(
+    'download-label',
+    'post',
+    ['id'=>'label-form']
+  );
+?>
+<div class="action-buttons">
+  <button type="submit" name="label-button" id='batch-label' class='btn btn-s btn-danger' download>Batch Labels</button>
+</div>
 <div class="order-fetch-log">
   <?= GridView::widget([
+      'id'=>'main-grid',
       'dataProvider' => $dataProvider,
       'columns'=>[
+        [
+          'class' => 'yii\grid\CheckboxColumn',
+          'checkboxOptions' => function ($model, $key, $index, $column) {
+              return ['value' => $model['ebay_id'],'class'=>'check-selection'];
+          },
+        ],
         'seller_id',
         'order_qty',
         [
@@ -45,7 +61,24 @@ OrderFetchAsset::register($this);
         //'create_from',
         //'create_to',
         'complete_at',
-        'status',
+        [
+          'attribute'=>'status',
+          'value'=>function($model, $key, $index, $column){
+            if($model['status']){
+              return $model['status']==1?'Pre Fetched':'Fetched';
+            }else{
+              return null;
+            }
+
+          }
+        ],
+        //'status',
+        [
+          'attribute'=>'Not Shipped',
+        ],
+        [
+          'attribute'=>'Not Label',
+        ],
         [
           'class'=>'yii\grid\ActionColumn',
           'header'=>Yii::t('app/order', 'Get Orders', []),
@@ -66,6 +99,7 @@ OrderFetchAsset::register($this);
       ]
   ]); ?>
 </div>
+<?php echo Html::endForm(); ?>
 <?php
     Modal::begin([
         'header' => 'Fetching Orders',
@@ -111,6 +145,18 @@ OrderFetchAsset::register($this);
 
     <div class="progress progress-striped" id='fetch-progress-bar' style='display:none;'>
       <div class="progress-bar progress-bar-pink active" style="width: 0%" role="progressbar" aria-valuenow="3" aria-valuemin="0" aria-valuemax="100">0%</div>
+    </div>
+    <div class="" style='display:none;' id="saving-error">
+      <div class="alert alert-block alert-success">
+        <p class="">
+          Completed!
+        </p>
+      </div>
+      <div id='error-scroll' style="max-height: 125px;">
+        <ul class="list-unstyled spaced" >
+        </ul>
+      </div>
+
     </div>
     <?php
 

@@ -254,18 +254,6 @@ class ProductController extends Controller
             ]);
     }
 
-    public function actionFindAllPackaging()
-    {
-        if(Yii::$app->request->isAjax){
-            Yii::$app->response->format = Response::FORMAT_JSON;
-            $post = Yii::$app->request->post();
-            $model = new \frontend\models\packagingpost\PackagingPost;
-            return $model->find()
-                ->asArray()
-                ->all();
-
-        }
-    }
 
     /**
      * 保存listing images

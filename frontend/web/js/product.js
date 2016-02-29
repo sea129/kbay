@@ -28,10 +28,7 @@ $(function(){
 	createOtherAjax('category');
 	createOtherAjax('stocklocation');
 
-	availablePackaging = getAllPackaging();
-	/*updatePackagings 包装和邮寄选项*/
-	updatePackagings();
-	$('#product-weight').add('#product-is_trackable').on('change',updatePackagings);
+
 
 	/*去除autocomplte的提示bug*/
 	$( "#main-sku" ).on( "autocompleteclose", function( event, ui ) { $(".ui-helper-hidden-accessible").remove();} );
@@ -50,49 +47,9 @@ function autoSKU(){
 
 	});
 }
-function getAllPackaging(){
-	var all;
-	$.ajax({
-		url: '/product/find-all-packaging',
-		type: 'post',
-		async: false,
-		success:function(response){
-			//console.log(response);
-			all = response;
-		}
-	});
-	return all;
-}
 
-function updatePackagings(){
-	suitableID = [];
-	var weight = $('#product-weight').val();
-	if($('#product-is_trackable').is(":checked")){
-		$.each(availablePackaging,function(key,obj){
-			if(obj['type']=='track parcel' && (parseInt(obj['weight_offset'])>=weight)){
-				suitableID.push(obj['id']);
-			}
-		});
-	}else{
-		$.each(availablePackaging,function(key,obj){
-			if(obj['type']!='track parcel' && parseInt(obj['weight_offset'])>=weight){
-				suitableID.push(obj['id']);
-			}
-		});
-	}
-	//console.log(suitableID);
 
-	$.each($(".radio-inline input[name='Product[packaging_id]']"),function(key,obj){
 
-		if($.inArray(obj['value'],suitableID)!=-1){
-
-			$(this).parent().show();
-		}else{
-			$(this).parent().hide();
-		}
-	});
-
-}
 
 function createOtherAjax(indentifier){
 	$('button#close-modal-'+indentifier).click(function(){

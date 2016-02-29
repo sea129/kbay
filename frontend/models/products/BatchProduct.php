@@ -38,7 +38,7 @@ class BatchProduct extends Product
 	public function scenarios()
 	{
 		$scenarios = parent::scenarios();
-		$scenarios['batch'] = ['sku','mini_desc', 'name', 'weight', 'description', 'specs', 'comment','supplier_id', 'packaging_id', 'is_trackable','stock_location','cost','category_id','qty_per_order','main_image'];
+		$scenarios['batch'] = ['sku','mini_desc', 'name', 'weight', 'description', 'specs', 'comment','supplier_id', 'is_trackable','stock_location','cost','category_id','qty_per_order','main_image'];
 		return $scenarios;
 	}
 

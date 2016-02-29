@@ -18,7 +18,7 @@ class ProductSearch extends Product
     public function rules()
     {
         return [
-            [['id', 'stock_qty', 'category_id', 'user_id', 'supplier_id', 'packaging_id', 'weight', 'is_trackable', 'qty_per_order'], 'integer'],
+            [['id', 'stock_qty', 'category_id', 'user_id', 'supplier_id', 'weight', 'is_trackable', 'qty_per_order'], 'integer'],
             [['sku', 'name', 'mini_desc', 'description', 'specs', 'stock_location', 'comment'], 'safe'],
             [['cost'], 'number'],
         ];
@@ -63,7 +63,6 @@ class ProductSearch extends Product
             'category_id' => $this->category_id,
             'user_id' => $this->user_id,
             'supplier_id' => $this->supplier_id,
-            'packaging_id' => $this->packaging_id,
             'weight' => $this->weight,
             'is_trackable' => $this->is_trackable,
             'qty_per_order' => $this->qty_per_order,

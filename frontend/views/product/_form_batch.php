@@ -99,13 +99,7 @@ use frontend\assets\BatchProductAsset;
                     'class' => 'ace ace-switch ace-switch-6',
                 ]) ?>
 
-    <!-- 包装邮递 -->
-    <?php $this->registerCss(".radio-inline{margin-left:10px;min-width:170px;}"); ?>
-    <?= $form->field($model, 'packaging_id',[
-                    'labelOptions'=>['class'=>'col-sm-2 control-label no-padding-right'],
-                    'inputTemplate' => "<div class='col-sm-8'>{input}</div>",
-                    'errorOptions' => ['class'=>'help-inline col-sm-2'],
-                    ])->inline()->radioList($model->getAllPackagings()) ?>
+    
 
     <?php echo $form->field($model, 'mini_desc')->widget(Summernote::className()); ?>
 

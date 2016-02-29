@@ -10,7 +10,6 @@ use frontend\models\category\Category;
 use frontend\models\stocklocation\StockLocation;
 use frontend\models\supplier\Supplier;
 use yii\web\UploadedFile;
-use frontend\models\packagingpost\PackagingPost;
 use frontend\models\listingimages\ListingImages;
 
 /**
@@ -28,7 +27,6 @@ use frontend\models\listingimages\ListingImages;
  * @property integer $user_id
  * @property string $stock_location
  * @property integer $supplier_id
- * @property integer $packaging_id
  * @property integer $weight
  * @property integer $is_trackable
  * @property string $comment
@@ -36,7 +34,6 @@ use frontend\models\listingimages\ListingImages;
  *
  * @property Category $category
  * @property StockLocation $stockLocation
- * @property Packaging $packaging
  * @property Supplier $supplier
  * @property User $user
  * @property ProductEbayListing[] $productEbayListings
@@ -73,9 +70,9 @@ class Product extends \frontend\models\base\MyActiveRecord
     public function rules()
     {
         return [
-            [['sku', 'user_id', 'supplier_id', 'packaging_id', 'is_trackable', 'qty_per_order','stock_location','weight','cost','name','main_image'], 'required'],
+            [['sku', 'user_id', 'supplier_id', 'is_trackable', 'qty_per_order','stock_location','weight','cost','name','main_image'], 'required'],
             [['mini_desc', 'description', 'specs', 'comment'], 'string'],
-            [['category_id', 'user_id', 'supplier_id', 'packaging_id', 'weight', 'is_trackable', 'qty_per_order'], 'integer'],
+            [['category_id', 'user_id', 'supplier_id', 'weight', 'is_trackable', 'qty_per_order'], 'integer'],
             [['cost'], 'number'],
             [['sku', 'stock_location'], 'string', 'max' => 64],
             [['name'], 'string', 'max' => 128],
@@ -115,7 +112,6 @@ class Product extends \frontend\models\base\MyActiveRecord
             'user_id' => Yii::t('app/product', 'User ID'),
             'stock_location' => Yii::t('app/product', 'Stock Location'),
             'supplier_id' => Yii::t('app/product', 'Supplier ID'),
-            'packaging_id' => Yii::t('app/product', 'Packaging ID'),
             'weight' => Yii::t('app/product', 'Weight'),
             'is_trackable' => Yii::t('app/product', 'Is Trackable'),
             'comment' => Yii::t('app/product', 'Comment'),
@@ -141,13 +137,7 @@ class Product extends \frontend\models\base\MyActiveRecord
         return $this->hasOne(StockLocation::className(), ['code' => 'stock_location']);
     }
 
-    /**
-     * @return \yii\db\ActiveQuery
-     */
-    public function getPackagingPost()
-    {
-        return $this->hasOne(PackagingPost::className(), ['id' => 'packaging_id']);
-    }
+
 
     /**
      * @return \yii\db\ActiveQuery
@@ -249,10 +239,6 @@ class Product extends \frontend\models\base\MyActiveRecord
     public function getSuppliers()
     {
         return $this->getDropdownArray('frontend\models\supplier\Supplier','id','name');
-    }
-    public function getAllPackagings()
-    {
-        return $this->getDropdownArray('frontend\models\packagingpost\PackagingPost','id','name');
     }
 
 

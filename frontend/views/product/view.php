@@ -111,11 +111,6 @@ ProductViewAsset::register($this);
                     'value' => '<span class="label label-info label-sm" style="font-size:20px;height:28px;">'.$model->weight.'<i class="ace-icon white">g</i>'.'</span>',
                 ],
                 [
-                    'attribute' => 'packaging_id',
-                    'format'=>'raw',
-                    'value' => '<span class="label label-info label-sm" style="font-size:20px;height:28px;">'.$model->packagingPost->name.'</span>',
-                ],
-                [
                     'attribute' => 'is_trackable',
                     'format'=>'raw',
                     'value' => '<span class="label '.($model->is_trackable==1?'label-success':'label-info').' label-sm" style="font-size:20px;height:28px;">'.$track.'</span>',

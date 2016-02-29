@@ -16,6 +16,7 @@ use frontend\models\orders\EOrderSearch;
 use frontend\models\orders\EbayTransaction;
 use frontend\components\ebayapi\EbayListing;
 use kartik\mpdf\Pdf;
+
 class OrderController extends \yii\web\Controller
 {
     public function behaviors()
@@ -52,37 +53,106 @@ class OrderController extends \yii\web\Controller
         ]);
     }
 
+
     public function actionDownloadLabel()
     {
       $post = Yii::$app->request->post();
       $notLabelOrder = EOrder::find()->where(['label'=>0,'status'=>0])->all();
 
-      $content = $this->renderPartial('label',[
-        'orders'=>$notLabelOrder,
-      ]);
+      $label = '';
+      $objPHPExcel = \PHPExcel_IOFactory::load('./labels/'.'eparcel_template20151023.xlsx');
+      $excelRow = 2;
+      foreach ($notLabelOrder as $order) {
+        $transactionArray=$order->getEbayTransactions()->all();
+        $transLabel = '';
+        $packSign = '';
+        $total = 0;
+        $weight = 0;
+        foreach ($transactionArray as $transaction) {
+          if($product = $transaction->getProduct()->one()){
+            $weight+=$product['weight'];
+            if($packSign==''){
+              $packaging = $product->getPackagingPost()->one();
+              if($packaging['type']=='track parcel'){
+                $packSign='eParcel';
+              }else{
+                $total += $product['cost'];
+                $orderCostOffSet = \common\models\setting\AppSetting::findOne('order_cost_eparcel_offset')->number_value;
+                if($total>$orderCostOffSet){
+                  $packSign='eParcel';
+                }
+              }
+            }
+          }
+
+          $transLabel .= $this->renderPartial('_translabel',['transaction'=>$transaction]);
+        }
+        $weight = round($weight/1000,2);
+        if($packSign==='eParcel'){
+          $objPHPExcel->setActiveSheetIndex(0)
+                 ->setCellValue('A'.$excelRow, $weight)
+                 ->setCellValue('B'.$excelRow, $order['recipient_name'])
+                 ->setCellValue('D'.$excelRow, $order['recipient_phone'])
+                 ->setCellValue('F'.$excelRow, $order['recipient_address1'])
+                 ->setCellValue('G'.$excelRow, $order['recipient_address2'])
+                 ->setCellValue('I'.$excelRow, $order['recipient_city'])
+                 ->setCellValue('J'.$excelRow, $order['recipient_state'])
+                 ->setCellValue('K'.$excelRow, $order['recipient_postcode'])
+                 ->setCellValue('L'.$excelRow, $order['ebay_order_id'])
+                 ->setCellValue('N'.$excelRow, $order['buyer_id'])
+                 ;
+          $excelRow++;
+        }
+        $label .= $this->renderPartial('label',['order'=>$order,'transLabel'=>$transLabel,'packSign'=>$packSign]);
+      }
       $tmpDir = './labels/'.Yii::$app->user->id;
+      $labelFile = $tmpDir."/label.pdf";
+      $excelFile = $tmpDir.'/eparcel.xlsx';
       if (!file_exists($tmpDir)) {
           mkdir($tmpDir, 0777, true);
       }
+      $objWriter = \PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
+      $objWriter->save($excelFile);
+
+      //return $label;
+
+      // $content = $this->renderPartial('label',[
+      //   'orders'=>$notLabelOrder,
+      // ]);
+
       $pdf = new Pdf([
             // set to use core fonts only
+            'format'=>['105','148'],
             'mode' => Pdf::MODE_UTF8,
+            'marginLeft' => '2',
+            'marginRight' => '2',
+            'marginTop' => '15',
+            'marginBottom' => '0',
+            'filename'=>$labelFile,
+            'options'=>[
+              'showImageErrors' => true,
+            ],
 
-            'marginLeft' => '3',
-            'marginRight' => '3',
-            'marginTop' => '3',
-            'marginBottom' => '3',
-            'filename'=>$tmpDir.'/'.date('Y-m-d-H-i-s').".pdf",
             'destination'=>Pdf::DEST_FILE,
             // your html content input
-            'content' => $content,
-
-        ]);
+            'content' => $label,
+          ]);
       $pdf->render();
+      //return $pdf->render();
+
+      $zip = new \ZipArchive();
+      $filename = $tmpDir.'/'."orders-".date('Y-m-d-H-i-s').".zip";
+      if ($zip->open($filename, \ZipArchive::CREATE)!==TRUE) {
+          exit("cannot open <$filename>\n");
+      }
+      $zip->addFile($labelFile,'labels-'.date('Y-m-d-H-i-s').'.pdf');
+      $zip->addFile($excelFile,'eparcel-'.date('Y-m-d-H-i-s').'.xlsx');
+      $zip->close();
+
       // return $this->render('label',[
       //   'orders'=>$notLabelOrder,
       // ]);
-      return '1';
+      return \Yii::$app->response->sendFile($filename);
     }
     public function actionFetchIndex(){
       $query = (new \yii\db\Query())

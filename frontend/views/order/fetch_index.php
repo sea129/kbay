@@ -13,11 +13,11 @@ OrderFetchAsset::register($this);
   echo Html::beginForm(
     'download-label',
     'post',
-    ['id'=>'label-form']
+    ['id'=>'label-form','target'=>'_blank']
   );
 ?>
 <div class="action-buttons">
-  <button type="submit" name="label-button" id='batch-label' class='btn btn-s btn-danger' download>Batch Labels</button>
+  <button type="submit" name="label-button" id='batch-label' class='btn btn-s btn-danger' download target="_blank">Batch Labels</button>
 </div>
 <div class="order-fetch-log">
   <?= GridView::widget([

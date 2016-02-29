@@ -3,6 +3,7 @@
 namespace frontend\models\orders;
 
 use Yii;
+use frontend\models\products\Product;
 
 /**
  * This is the model class for table "ebay_transaction".
@@ -86,6 +87,10 @@ class EbayTransaction extends \yii\db\ActiveRecord
         return $this->hasOne(EbayOrder::className(), ['id' => 'ebay_order_id']);
     }
 
+    public function getProduct()
+    {
+      return $this->hasOne(Product::className(),['sku'=>'item_sku']);
+    }
     /**
      * @inheritdoc
      * @return EbayTransactionQuery the active query used by this AR class.

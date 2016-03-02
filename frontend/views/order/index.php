@@ -109,7 +109,7 @@ $this->params['breadcrumbs'][] = $this->title;
             //'status',
             //'ebay_id',
             // 'user_id',
-            // 'ebay_order_id',
+             'ebay_order_id',
             // 'ebay_seller_id',
             'total',
             [

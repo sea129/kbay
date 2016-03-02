@@ -5,6 +5,8 @@ use common\models\User;
 use yii\base\Model;
 use Yii;
 
+use frontend\models\UserSetting;
+
 /**
  * Signup form
  */
@@ -50,7 +52,12 @@ class SignupForm extends Model
             $user->setPassword($this->password);
             $user->generateAuthKey();
             if ($user->save()) {
+              $userSetting = new UserSetting();
+              $userSetting->user_id=$user->id;
+              if($userSetting->save()){
                 return $user;
+              }
+
             }
         }
 

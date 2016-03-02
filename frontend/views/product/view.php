@@ -8,6 +8,8 @@ use frontend\assets\ProductViewAsset;
 use kartik\file\FileInput;
 use kartik\sortable\Sortable;
 use yii\widgets\Pjax;
+
+use yii\bootstrap\Modal;
 /* @var $this yii\web\View */
 /* @var $model frontend\models\products\Product */
 
@@ -303,11 +305,12 @@ ProductViewAsset::register($this);
                                 ]); ?>
                     </div>
                     <?php Pjax::end(); ?>
-                    <button type='button' class="btn btn-white btn-yellow btn-sm btn-block serializeImgs" data-product-id="<?php echo $model->id; ?>" data-ebay-id="<?php echo $ebayAccountObj->id; ?>">save</button>
+                    <button type='button' class="btn btn-white btn-yellow btn-sm btn-block serializeImgs" data-product-id="<?php echo $model->id; ?>" data-ebay-id="<?php echo $ebayAccountObj->id; ?>">save images</button>
                     <a target='_blank' href='<?php echo Url::to(['product/preview-desc','id'=>$model->id,'ebayID'=>$ebayAccountObj->id,]); ?>' class="btn btn-white btn-yellow btn-sm btn-block">Preview Template</a>
                     <a target='_blank' href='<?php echo Url::to(['product/generate-code','id'=>$model->id,'ebayID'=>$ebayAccountObj->id,]); ?>' class="btn btn-white btn-yellow btn-sm btn-block">Generate Code</a>
-                    <button type='button' class="btn btn-white btn-yellow btn-sm btn-block pricetest">get price</button>
+
                     <?php if(isset($listings[$ebayAccountObj->id])){ ?>
+                    <button type='button' class="btn btn-white btn-yellow btn-sm btn-block update-listing">Update Listing</button>
                     <div class="listing-selling-info">
                       <h6><?php echo $listings[$ebayAccountObj->id]['title']; ?></h6>
                       <ul class="list-unstyled spaced">
@@ -329,6 +332,8 @@ ProductViewAsset::register($this);
 												</li>
                       </ul>
                     </div>
+                    <?php }else{ ?>
+                    <button type='button' class="btn btn-white btn-yellow btn-sm btn-block create-listing" data-toggle='modal' data-target='#add-listing-modal' data-ebay-id='<?php echo $ebayAccountObj->id; ?>' >Create Listing</button>
                     <?php } ?>
                 </div>
             </div>
@@ -336,6 +341,94 @@ ProductViewAsset::register($this);
     </div>
 <?php } ?>
 </div>
-<div class="" style="height:1000px;">
+<?php
+    Modal::begin([
+        'header' => 'Add a Listing',
+        'options' =>['id'=>'add-listing-modal'],
+        'size' => 'modal-lg',
+        'clientOptions' => [
+            'backdrop' => 'static',
+            'keyboard' => false,
+        ],
+        'clientEvents' =>[
+            //'show.bs.modal' =>"function(){progreeBarInit();}",
+            //'shown.bs.modal' => "function(e){preSyncModal(e);}",
+            //'hidden.bs.modal' => "function(e){closeSyncModal(e);}",
+        ],
+    ]); ?>
+    <div class="row">
+      <div class="col-xs-8">
+        <div class="input-group">
+    			<span class="input-group-addon">
+    				<i class="ace-icon fa fa-check"></i>
+    			</span>
 
-</div>
+    			<input type="text" class="form-control" placeholder="Type a similar item ID" id='similar-item-id'>
+    			<span class="input-group-btn">
+    				<button type="button" class="btn btn-purple btn-sm" id="similar-search">
+    					<span class="ace-icon fa fa-search icon-on-right bigger-110"></span>
+    					Search
+    				</button>
+    			</span>
+    		</div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-xs-8">
+        <h3>Listing Details</h3>
+      </div>
+    </div>
+    <div class="row" id='listing-details'>
+      <div class="col-xs-12">
+        <form class="form-horizontal" role="form">
+          <div class="form-group">
+            <label for="item-cate-id" class="col-xs-2 control-label no-padding-right">
+              eBay Category ID
+            </label>
+            <div class="col-xs-3">
+              <input type="text" id="item-cate-id" class="col-xs-12">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="item-title" class="col-xs-2 control-label no-padding-right">
+              Item Title
+            </label>
+            <div class="col-xs-10">
+              <input type="text" id="item-title" class="col-xs-12">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="item-price" class="col-xs-2 control-label no-padding-right">
+              Item Price
+            </label>
+            <div class="col-xs-3">
+              <input type="text" id="item-price" class="col-xs-12">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="item-qty" class="col-xs-2 control-label no-padding-right">
+              Item Qty
+            </label>
+            <div class="col-xs-3">
+              <input type="text" id="item-qty" class="col-xs-12">
+            </div>
+          </div>
+          <div class="clearfix form-actions">
+						<div class="col-md-offset-3 col-md-9">
+							<button class="btn btn-info" type="button" id="btn-submit">
+								<i class="ace-icon fa fa-check bigger-110"></i>
+								Submit
+							</button>
+
+							&nbsp; &nbsp; &nbsp;
+							<button class="btn" type="reset">
+								<i class="ace-icon fa fa-undo bigger-110"></i>
+								Reset
+							</button>
+						</div>
+					</div>
+        </form>
+
+      </div>
+    </div>
+<?php Modal::end(); ?>

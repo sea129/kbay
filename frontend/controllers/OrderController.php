@@ -16,6 +16,7 @@ use frontend\models\orders\EOrderSearch;
 use frontend\models\orders\EbayTransaction;
 use frontend\components\ebayapi\EbayListing;
 use kartik\mpdf\Pdf;
+use frontend\models\UserSetting;
 
 class OrderController extends \yii\web\Controller
 {
@@ -62,6 +63,7 @@ class OrderController extends \yii\web\Controller
       $label = '';
       $objPHPExcel = \PHPExcel_IOFactory::load('./labels/'.'eparcel_template20151023.xlsx');
       $excelRow = 2;
+      $trackingThreshold = UserSetting::findOne(Yii::$app->user->id)->min_cost_tracking;
       foreach ($notLabelOrder as $order) {
         $transactionArray=$order->getEbayTransactions()->all();
         $transLabel = '';
@@ -70,25 +72,18 @@ class OrderController extends \yii\web\Controller
         $weight = 0;
         foreach ($transactionArray as $transaction) {
           if($product = $transaction->getProduct()->one()){
-            $weight+=$product['weight'];
-            if($packSign==''){
-              $packaging = $product->getPackagingPost()->one();
-              if($packaging['type']=='track parcel'){
-                $packSign='eParcel';
-              }else{
-                $total += $product['cost'];
-                $orderCostOffSet = \common\models\setting\AppSetting::findOne('order_cost_eparcel_offset')->number_value;
-                if($total>$orderCostOffSet){
-                  $packSign='eParcel';
-                }
-              }
+            $weight += ($product['weight']*$transaction['qty_purchased']);
+            $total += ($product['cost']*$transaction['qty_purchased']);
+            if($total>$trackingThreshold){
+              $packSign = 'TRACKING';
             }
+
           }
 
           $transLabel .= $this->renderPartial('_translabel',['transaction'=>$transaction]);
         }
         $weight = round($weight/1000,2);
-        if($packSign==='eParcel'){
+        if($packSign==='TRACKING'){
           $objPHPExcel->setActiveSheetIndex(0)
                  ->setCellValue('A'.$excelRow, $weight)
                  ->setCellValue('B'.$excelRow, $order['recipient_name'])
@@ -103,7 +98,7 @@ class OrderController extends \yii\web\Controller
                  ;
           $excelRow++;
         }
-        $label .= $this->renderPartial('label',['order'=>$order,'transLabel'=>$transLabel,'packSign'=>$packSign]);
+        $label .= $this->renderPartial('label',['order'=>$order,'transLabel'=>$transLabel,'packSign'=>$packSign,'weight'=>$weight]);
       }
       $tmpDir = './labels/'.Yii::$app->user->id;
       $labelFile = $tmpDir."/label.pdf";
@@ -126,7 +121,7 @@ class OrderController extends \yii\web\Controller
             'mode' => Pdf::MODE_UTF8,
             'marginLeft' => '2',
             'marginRight' => '2',
-            'marginTop' => '15',
+            'marginTop' => '5',
             'marginBottom' => '0',
             'filename'=>$labelFile,
             'options'=>[

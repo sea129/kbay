@@ -15,6 +15,7 @@ use yii\web\Response;
 
 use frontend\components\ebayapi\EbayApi;
 use frontend\components\ebayapi\EbayListing;
+use frontend\components\ebayapi\ShoppingApi;
 /**
  * ListingController implements the CRUD actions for Listing model.
  */
@@ -32,6 +33,17 @@ class ListingController extends Controller
         ];
     }
 
+    public function actionSearchSimilar()
+    {
+      if(Yii::$app->request->isAjax){
+        Yii::$app->response->format = Response::FORMAT_JSON;
+        $post=Yii::$app->request->post();
+        $shoppingApi = new ShoppingApi();
+        $item = $shoppingApi->getItem($post['itemId']);
+
+        return $item;
+      }
+    }
     /**
      * 同步一页
      */

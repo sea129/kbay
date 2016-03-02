@@ -62,7 +62,7 @@ use yii\helpers\Url;
   </tr>
   <tr>
     <td height='40' style='font-size:10px;' align='center' valign='middle'>
-      <?php echo $packSign; ?>
+      <?php echo $packSign.' / '.$weight.' / '; ?>
     </td>
   </tr>
 <?php echo $transLabel; ?>

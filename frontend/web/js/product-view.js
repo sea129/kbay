@@ -18,25 +18,7 @@ $(document).on('ready', function(){
 
 	//var client = new ZeroClipboard( $("#copy") );
 
-	$('.pricetest').click(function(e){
 
-		$.ajax({
-			//async: false,
-			url: "http://ebayimages.x10host.com/price.php",
-			dataType: 'jsonp',
-			//type:'POST',
-			success: function( result ) {
-		    	console.log(result.fullname);
-		    },
-		    error: function( xhr, status, errorThrown ) {
-		        alert( "Sorry, there was a problem!" );
-		        console.log( "Error: " + errorThrown );
-		        console.log( "Status: " + status );
-		        console.dir( xhr );
-		    },
-		});
-		e.preventDefault();
-	});
 
 	listingImageInit();
 	deleteLstImage();
@@ -45,6 +27,28 @@ $(document).on('ready', function(){
 	$('.sortable').disableSelection();
 	//$('.hack-bar').hide();
 
+  $('#similar-search').click(function(){
+    //var itemId = $('#similar-item-id').value;
+    $.ajax({
+      url: '/listing/search-similar',
+      type: 'POST',
+      //dataType: 'default: Intelligent Guess (Other values: xml, json, script, or html)',
+      data: {itemId: $('#similar-item-id').val()}
+    })
+    .done(function(result) {
+      console.log(result.title,result.price,result.categoryID);
+      $('#item-cate-id').val(result.categoryID);
+      $('#item-title').val(result.title);
+      $('#item-price').val(result.price);
+    })
+    .fail(function() {
+      console.log("error");
+    })
+    .always(function() {
+      console.log("complete");
+    });
+
+  });
 });
 function serializeImgs(){
 	$('.serializeImgs').click(function(e){

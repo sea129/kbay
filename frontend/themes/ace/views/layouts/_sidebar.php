@@ -57,9 +57,9 @@
                     </a>
                 </li>
                 <li class="hover">
-                    <a href="/packaging-post">
+                    <a href="/user-setting">
                          <i class="menu-icon fa fa-caret-right"></i>
-                            <?= Yii::t('app/app', 'Packaging and Post'); ?>
+                            <?= Yii::t('app/app', 'User Setting'); ?>
                     </a>
                 </li>
 

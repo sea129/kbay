@@ -9,6 +9,9 @@ use DTS\eBaySDK\Trading\Services;
 use DTS\eBaySDK\Trading\Types;
 use DTS\eBaySDK\Trading\Enums;
 use yii\web\NotFoundHttpException;
+/**
+ * trading api
+ */
 class EbayApi
 {
 	const COMPATABILITY_LEVEL = 941;

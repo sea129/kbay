@@ -8,7 +8,7 @@ use DTS\eBaySDK\Shopping\Types;
 use DTS\eBaySDK\Shopping\Enums;
 use yii\web\NotFoundHttpException;
 /**
- *
+ *shopping api
  */
 class ShoppingApi
 {

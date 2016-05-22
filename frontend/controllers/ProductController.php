@@ -23,8 +23,10 @@ use yii\helpers\Url;
 use yii\web\UploadedFile;
 
 use yii2mod\ftp\FtpClient;
-
+use Doctrine\Common\Cache\FilesystemCache;
+use RemoteImageUploader;
 use frontend\models\listings\Listing;
+use frontend\components\JHelper;
 /**
  * ProductController implements the CRUD actions for Product model.
  */
@@ -51,6 +53,79 @@ class ProductController extends Controller
                 ],
             ],
         ];
+    }
+
+    /**
+     * handle uploaded product main image from ajax
+     */
+
+    public function actionUploadMainImage()
+    {
+      if(Yii::$app->request->isAjax){
+        Yii::$app->response->format = Response::FORMAT_JSON;
+        //return var_dump($_FILES['main-image-upload']['tmp_name']);
+        if(!isset($_FILES['main-image-upload'])){
+          return ['error'=>'No File found for upload.'];
+        }else{
+
+          $image = $_FILES['main-image-upload'];
+          try {
+            $url = JHelper::uploadHelper($image['tmp_name']);
+          } catch (\Exception $e) {
+            return ['error'=>$e->getMessage()];
+          }
+
+          return ['url'=>$url];
+          //return $url;
+        }
+
+      }else{
+        return false;
+      }
+    }
+
+    public function actionUploadListImage(){
+      if(Yii::$app->request->isAjax){
+        Yii::$app->response->format = Response::FORMAT_JSON;
+        $post = Yii::$app->request->post();
+        if(!isset($_FILES['pimages'])){
+          return ['error'=>'No File found for upload.'];
+        }else{
+          $image = $_FILES['pimages'];
+          $url=[];
+          foreach ($image['tmp_name'] as $key => $value) {
+            try {
+              $url[] = JHelper::uploadHelper($value);
+            } catch (\Exception $e) {
+              return ['error'=>$e->getMessage()];
+            }
+          }
+        }
+        $lstImages = ListingImages::findOne(['product_id'=>$post['productID'],'ebay_account_id'=>$post['ebayID']]);
+        if($lstImages!=null){
+          $lstImages->image_url = json_encode(array_merge(json_decode($lstImages->image_url),$url));
+          if($lstImages->save()){
+            return true;
+          }else{
+            return ['error'=>'failed to save'];
+          }
+        }else{
+          $lstImages = new ListingImages;
+          $lstImages->product_id = $post['productID'];
+          $lstImages->ebay_account_id = $post['ebayID'];
+          $lstImages->image_url = json_encode($url);
+          if($lstImages->save()){
+            return true;
+          }else{
+            return ['error'=>'failed to create and save'];
+          }
+        }
+        //return ['url'=>$url];
+        //return var_dump($_FILES['pimages']['tmp_name']);
+
+      }else{
+        return false;
+      }
     }
 
     /**

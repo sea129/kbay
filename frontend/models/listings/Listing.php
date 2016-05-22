@@ -4,7 +4,7 @@ namespace frontend\models\listings;
 
 use Yii;
 use frontend\models\products\Product;
-
+use frontend\models\ebayaccounts\EbayAccount;
 /**
  * This is the model class for table "listing".
  *
@@ -79,7 +79,7 @@ class Listing extends \frontend\models\base\MyActiveRecord
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getSku0()
+    public function getProduct()
     {
         return $this->hasOne(Product::className(), ['sku' => 'sku']);
     }

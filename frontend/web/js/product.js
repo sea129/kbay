@@ -91,30 +91,35 @@ function createOtherAjax(indentifier){
 	});
 
 }
-
-// ajax upload main image file
-function uploadMainImage(files){
-	data = new FormData();
-	data.append("file", files['0']);
-	$.ajax({
-			data: data,
-			type: "POST",
-			//async: false,
-			url: 'http://uploads.im/api',
-			cache: false,
-			contentType: false,
-			processData: false,
-			success: function(url) {
-				if(url.status_code==200){
-					$('.progress-bar').html('100%').css('width','100%');
-					$('#main_image_ph').attr('src',url.data.img_url);
-					$('#product-main_image').val(url.data.img_url);
-					$.pjax.reload({container: '#product-image'});
-
-				}else{
-					$('.progress-bar').html('Error').css('width','100%').toggleClass('progress-bar-success').toggleClass('progress-bar-danger');
-				}
-			}
-	});
-
+function uploadComplete(response){
+	$("input[name='Product[main_image]']").val(response.url);
+	//$('#main_image_ph').attr('src',response.url);
+	//$.pjax.reload({container: '#product-image'});
+	console.log(response.url);
 }
+// ajax upload main image file
+// function uploadMainImage(files){
+// 	data = new FormData();
+// 	data.append("file", files['0']);
+// 	$.ajax({
+// 			data: data,
+// 			type: "POST",
+// 			//async: false,
+// 			url: 'http://uploads.im/api',
+// 			cache: false,
+// 			contentType: false,
+// 			processData: false,
+// 			success: function(url) {
+// 				if(url.status_code==200){
+// 					$('.progress-bar').html('100%').css('width','100%');
+// 					$('#main_image_ph').attr('src',url.data.img_url);
+// 					$('#product-main_image').val(url.data.img_url);
+// 					$.pjax.reload({container: '#product-image'});
+//
+// 				}else{
+// 					$('.progress-bar').html('Error').css('width','100%').toggleClass('progress-bar-success').toggleClass('progress-bar-danger');
+// 				}
+// 			}
+// 	});
+//
+// }

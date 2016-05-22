@@ -41,13 +41,14 @@ class EbayAccount extends \frontend\models\base\MyActiveRecord
     public function rules()
     {
         return [
-            [['seller_id', 'user_id'], 'required'],
+            [['seller_id', 'user_id', 'paypal', 'item_location'], 'required'],
             [['user_id', 'listing_template_id'], 'integer'],
             [['shipping_info', 'warranty_info', 'payment_info', 'contact_info', 'token'], 'string'],
             [['token_expiration'], 'safe'],
-            [['seller_id', 'store_id'], 'string', 'max' => 128],
+            [['seller_id', 'store_id', 'paypal'], 'string', 'max' => 128],
             [['email'], 'string', 'max' => 64],
             [['listing_assets_url'], 'string', 'max' => 255],
+            [['item_location'], 'string', 'max' => 256],
             [['seller_id'], 'unique']
         ];
     }

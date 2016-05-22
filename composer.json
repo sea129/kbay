@@ -30,7 +30,9 @@
         "kartik-v/yii2-mpdf": "@dev",
         "kartik-v/yii2-date-range": "*",
         "kartik-v/yii2-widgets": "*",
-        "phpoffice/phpexcel": "dev-develop"
+        "phpoffice/phpexcel": "dev-develop",
+        "yiisoft/yii2-imagine": "^2.0",
+        "ptcong/php-image-uploader": "6.0"
     },
     "require-dev": {
         "yiisoft/yii2-codeception": "*",

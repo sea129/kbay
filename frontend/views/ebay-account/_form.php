@@ -36,6 +36,10 @@ use yii\widgets\ActiveForm;
 
     <?= $form->field($model, 'listing_assets_url')->textInput(['maxlength' => true]) ?>
 
+    <?= $form->field($model, 'item_location')->textInput(['maxlength' => true]) ?>
+
+    <?= $form->field($model, 'paypal')->textInput(['maxlength' => true]) ?>
+
     <div class="form-group">
         <?= Html::submitButton($model->isNewRecord ? Yii::t('app/ebayaccount', 'Create') : Yii::t('app/ebayaccount', 'Update'), ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary']) ?>
     </div>

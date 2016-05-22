@@ -121,7 +121,7 @@ class OrderController extends \yii\web\Controller
             'mode' => Pdf::MODE_UTF8,
             'marginLeft' => '2',
             'marginRight' => '2',
-            'marginTop' => '5',
+            'marginTop' => '13',
             'marginBottom' => '0',
             'filename'=>$labelFile,
             'options'=>[

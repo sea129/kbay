@@ -2,7 +2,7 @@
 
 use yii\helpers\Html;
 use yii\widgets\DetailView;
-
+use yii\widgets\Pjax;
 /* @var $this yii\web\View */
 /* @var $model frontend\models\supplier\Supplier */
 
@@ -37,5 +37,8 @@ $this->params['breadcrumbs'][] = $this->title;
             //'user_id',
         ],
     ]) ?>
-
+<?php
+// Pjax::begin(['id' => 'test']);
+// echo "asdfasdfasdfasdf";
+// Pjax::end(); ?>
 </div>

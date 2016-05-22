@@ -73,4 +73,6 @@ class ListingImages extends \yii\db\ActiveRecord
     {
         return new ListingImagesQuery(get_called_class());
     }
+
+    
 }

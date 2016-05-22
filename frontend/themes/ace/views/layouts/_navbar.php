@@ -18,11 +18,68 @@ use frontend\themes\ace\AceAsset;
             <a href="/" class="navbar-brand">
                 <small>
                     <i class="fa fa-leaf"></i>
-                    Kbay Tool
+                    Kurt's App
                 </small>
             </a>
         </div>
+        <nav role="navigation" class="navbar-menu pull-left collapse navbar-collapse">
+					<!-- #section:basics/navbar.nav -->
+					<ul class="nav navbar-nav">
+						<li class="">
+							<a href="#" class="dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+								设置
+	  		&nbsp;
+								<i class="ace-icon fa fa-angle-down bigger-110"></i>
+							</a>
 
+							<ul class="dropdown-menu dropdown-light-blue dropdown-caret">
+								<li>
+									<a href="#">
+										<i class="ace-icon fa fa-eye bigger-110 blue"></i>
+										Monthly Visitors
+									</a>
+								</li>
+
+								<li>
+									<a href="#">
+										<i class="ace-icon fa fa-user bigger-110 blue"></i>
+										Active Users
+									</a>
+								</li>
+
+								<li>
+									<a href="#">
+										<i class="ace-icon fa fa-cog bigger-110 blue"></i>
+										Settings
+									</a>
+								</li>
+							</ul>
+						</li>
+
+						<li>
+							<a href="#">
+								<i class="ace-icon fa fa-envelope"></i>
+								Messages
+								<span class="badge badge-warning">5</span>
+							</a>
+						</li>
+					</ul>
+
+					<!-- /section:basics/navbar.nav -->
+
+					<!-- #section:basics/navbar.form -->
+					<form class="navbar-form navbar-left form-search" role="search">
+						<div class="form-group">
+							<input type="text" placeholder="search">
+						</div>
+
+						<button type="button" class="btn btn-mini btn-info2">
+							<i class="ace-icon fa fa-search icon-only bigger-110"></i>
+						</button>
+					</form>
+
+					<!-- /section:basics/navbar.form -->
+				</nav>
         <div class="navbar-buttons navbar-header pull-right" role="navigation">
             <ul class="nav ace-nav">
                 <li class="grey">

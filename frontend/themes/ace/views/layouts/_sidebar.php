@@ -116,13 +116,13 @@
                 <li class="hover">
                     <a href="/ebay-account">
                          <i class="menu-icon fa fa-caret-right"></i>
-                            Account List
+                            账号列表
                     </a>
                 </li>
                 <li class="hover">
                     <a href="/listing-template">
                          <i class="menu-icon fa fa-caret-right"></i>
-                            Listing Template
+                            刊登模板
                     </a>
                 </li>
 

@@ -209,7 +209,14 @@ ProductViewAsset::register($this);
    //var_dump($sortableItems);
    echo '</pre>';
 ?>
+<?php
+  // Pjax::begin(['id' => 'test','timeout' => 7000,'linkSelector'=>'#tt']);
+  // echo "asdfasdfasdfasdf";echo "<br/>";
+   ?>
+   <!-- <button type='submit' id='tt' >Create Listing</button> -->
 
+  <?php  //Pjax::end();
+ ?>
 <?php foreach ($ebayAccArray as $key => $ebayAccountObj) { ?>
     <div class="col-xs-12 col-sm-3 widget-container-col ui-sortable" id="listing-info-<?php echo $ebayAccountObj->id; ?>">
         <div class="widget-box ui-sortable-handle">
@@ -225,9 +232,7 @@ ProductViewAsset::register($this);
             </div>
             <div class="widget-body" style="display:block">
                 <div class="widget-main">
-                  <?php Pjax::begin(['id' => 'listing-images-pjax-'.$ebayAccountObj->id]); ?>
-                  <!-- hack need to fix with better approch later -->
-                  <?php //ProductViewAsset::register($this);//$this->registerJs("$(function(){deleteLstImage();});", \yii\web\View::POS_END, 'my-options'); ?>
+                  <?php Pjax::begin(['timeout' => 5000,'id' => 'listing-images-pjax-'.$ebayAccountObj->id]); ?>
 
                   <div class="listing-images-loading" style='display:none;text-align:center;'>
                     <img src="<?php echo Url::to(['/images/loading.gif']) ?>" alt="" />
@@ -257,14 +262,27 @@ ProductViewAsset::register($this);
                                     'name' =>'pimages[]',
                                     'options' => ['id'=>'upload-listing-images-'.$key,'multiple' => true,'accept' => 'image/*'],
                                     'pluginOptions' => [
-                                        'showPreview'=>false,
-                                        'maxFileSize'=>'200',
+                                      // 'layoutTemplates'=>[
+                                      //   'footer'=>'',
+                                      //   'actions'=>'',
+                                      // ],
+                                        // 'showCaption'=>false,
+                                        // 'showRemove'=>false,
+                                        // 'showUpload'=>false,
+                                        // 'showCancel'=>false,
+                                        //'showPreview'=>false,
+                                        'previewSettings'=>[
+                                          'image'=>[
+                                            'width'=>'100px','height'=>'auto',
+                                          ],
+                                        ],
+                                        'maxFileSize'=>'2000',
                                         'maxFileCount'=>$maxImageCount,
                                         'uploadAsync'=>false,
-                                        //'showCancel'=>false,
-                                        //'uploadUrl' => Url::to(['product/upload-list-image']),
-                                        'uploadUrl' => Url::to('http://uploads.im/api'),
-                                        //'uploadExtraData'=>['ebaySeller'=>$ebayAccountObj->seller_id,'productID'=>$model->id],
+                                        'showCancel'=>false,
+                                        'uploadUrl' => Url::to(['product/upload-list-image']),
+                                        //'uploadUrl' => Url::to('http://uploads.im/api'),
+                                        'uploadExtraData'=>['ebayID'=>$ebayAccountObj->id,'productID'=>$model->id],
                                         'allowedFileTypes'=>['image'],
                                         'allowedFileExtensions'=>['jpg','png'],
                                         'browseLabel'=>'',
@@ -275,31 +293,37 @@ ProductViewAsset::register($this);
                                         'uploadLabel'=>'',
                                         'cancelClass'=>'btn btn-sm btn-pink',
                                         'uploadClass'=>'btn btn-sm btn-pink',
+                                        'browseClass' => 'btn btn-success btn-sm',
+                                        'uploadClass' => 'btn btn-danger btn-sm',
+                                        'removeClass' => 'btn btn-info btn-sm',
                                     ],
 
                                     'pluginEvents'=>[
-                                        'filebatchpreupload'=>"function(event, data, previewId, index){
-                                            data.jqXHR.abort();
-                                            listingImageInit();
-                                            var fileInput = $(this).parents('.file-input');
-                                            uploadAjaxHack(0,data.files,fileInput.find('.progress-bar'));
-                                            deferredUpload = $.Deferred();
-                                            deferredUpload.done(function(value){
-                                              if(value){
-                                                saveListingImagesInfo(".$ebayAccountObj->id.",".$model->id.".);
-                                                deferredSave = $.Deferred().done(function(value){
-                                                  if(value){
-                                                    fileInput.find('.progress-bar').html('100%').css('width','100%');
-                                                  }else{
-                                                    fileInput.find('.progress-bar').html('Error').css('width','100%').toggleClass('progress-bar-success').toggleClass('progress-bar-danger');
-                                                  }
-                                                });
-                                              }else{
-                                                fileInput.find('.progress-bar').html('Error').css('width','100%').toggleClass('progress-bar-success').toggleClass('progress-bar-danger');
-                                              }
-                                            });
-                                        }",
-                                        //'filebatchuploadcomplete' => "function(event, files, extra){console.log('123');}",
+                                        // 'filebatchpreupload'=>"function(event, data, previewId, index){
+                                        //     data.jqXHR.abort();
+                                        //     listingImageInit();
+                                        //     var fileInput = $(this).parents('.file-input');
+                                        //     uploadAjaxHack(0,data.files,fileInput.find('.progress-bar'));
+                                        //     deferredUpload = $.Deferred();
+                                        //     deferredUpload.done(function(value){
+                                        //       if(value){
+                                        //         saveListingImagesInfo(".$ebayAccountObj->id.",".$model->id.".);
+                                        //         deferredSave = $.Deferred().done(function(value){
+                                        //           if(value){
+                                        //             fileInput.find('.progress-bar').html('100%').css('width','100%');
+                                        //           }else{
+                                        //             fileInput.find('.progress-bar').html('Error').css('width','100%').toggleClass('progress-bar-success').toggleClass('progress-bar-danger');
+                                        //           }
+                                        //         });
+                                        //       }else{
+                                        //         fileInput.find('.progress-bar').html('Error').css('width','100%').toggleClass('progress-bar-success').toggleClass('progress-bar-danger');
+                                        //       }
+                                        //     });
+                                        // }",
+                                        // 'fileuploaded'=>'function(event, data, previewId, index){
+                                        //   uploadComplete(data.response);
+                                        // }',
+                                        'filebatchuploadcomplete' => "function(event, files, extra){pjaxReload(".$ebayAccountObj->id.")}",
                                     ],
 
                                 ]); ?>
@@ -310,7 +334,7 @@ ProductViewAsset::register($this);
                     <a target='_blank' href='<?php echo Url::to(['product/generate-code','id'=>$model->id,'ebayID'=>$ebayAccountObj->id,]); ?>' class="btn btn-white btn-yellow btn-sm btn-block">Generate Code</a>
 
                     <?php if(isset($listings[$ebayAccountObj->id])){ ?>
-                    <button type='button' class="btn btn-white btn-yellow btn-sm btn-block update-listing">Update Listing</button>
+                    <button type='button' class="btn btn-white btn-yellow btn-sm btn-block revise-listing" data-toggle='modal' data-target='#revise-listing-modal' data-ebay-id='<?php echo $ebayAccountObj->id; ?>' data-ebay-seller='<?php echo $ebayAccountObj->seller_id; ?>' data-item-id='<?php echo $listings[$ebayAccountObj->id]['item_id']; ?>'>Revise Listing</button>
                     <div class="listing-selling-info">
                       <h6><?php echo $listings[$ebayAccountObj->id]['title']; ?></h6>
                       <ul class="list-unstyled spaced">
@@ -333,7 +357,7 @@ ProductViewAsset::register($this);
                       </ul>
                     </div>
                     <?php }else{ ?>
-                    <button type='button' class="btn btn-white btn-yellow btn-sm btn-block create-listing" data-toggle='modal' data-target='#add-listing-modal' data-ebay-id='<?php echo $ebayAccountObj->id; ?>' >Create Listing</button>
+                    <button type='button' class="btn btn-white btn-yellow btn-sm btn-block create-listing" data-toggle='modal' data-target='#add-listing-modal' data-ebay-id='<?php echo $ebayAccountObj->id; ?>' data-ebay-seller='<?php echo $ebayAccountObj->seller_id; ?>' >Create Listing</button>
                     <?php } ?>
                 </div>
             </div>
@@ -351,7 +375,7 @@ ProductViewAsset::register($this);
             'keyboard' => false,
         ],
         'clientEvents' =>[
-            //'show.bs.modal' =>"function(){progreeBarInit();}",
+            'show.bs.modal' =>"function(e){showSellerId(e);initCreateModal(e);}",
             //'shown.bs.modal' => "function(e){preSyncModal(e);}",
             //'hidden.bs.modal' => "function(e){closeSyncModal(e);}",
         ],
@@ -375,12 +399,33 @@ ProductViewAsset::register($this);
     </div>
     <div class="row">
       <div class="col-xs-8">
-        <h3>Listing Details</h3>
+        <h3>eBay Seller: <span id='ebay-seller-id'></span></h3>
       </div>
     </div>
-    <div class="row" id='listing-details'>
+    <div class="row">
       <div class="col-xs-12">
+        <div class="notice-board" style='display:none;'>
+          <div class="alert">
+  					<button type="button" class="close" data-dismiss="alert">
+  						<i class="ace-icon fa fa-times"></i>
+  					</button>
+  					<p class='message'>
+
+  					</p>
+  				</div>
+        </div>
+      </div>
+    </div>
+    <div class="row" style='display:none;text-align:center;' id="similar-search-loading">
+      <img src="<?php echo Url::to(['/images/loading.gif']) ?>" alt="" />
+    </div>
+    <div class="row" id='listing-details'>
+
+      <div class="col-xs-12">
+        <h3>Listing Details</h3>
         <form class="form-horizontal" role="form">
+          <input type="hidden" id="ebay-id" class="col-xs-12">
+          <input type="hidden" id="product-id" class="col-xs-12" value="<?php echo $model->id; ?>">
           <div class="form-group">
             <label for="item-cate-id" class="col-xs-2 control-label no-padding-right">
               eBay Category ID
@@ -394,7 +439,7 @@ ProductViewAsset::register($this);
               Item Title
             </label>
             <div class="col-xs-10">
-              <input type="text" id="item-title" class="col-xs-12">
+              <input type="text" id="item-title" class="col-xs-12" maxlength="80">
             </div>
           </div>
           <div class="form-group">
@@ -402,29 +447,262 @@ ProductViewAsset::register($this);
               Item Price
             </label>
             <div class="col-xs-3">
-              <input type="text" id="item-price" class="col-xs-12">
+              <span class="input-icon">
+              <input type="text" id="item-price" class="col-xs-12"><i class="ace-icon bigger-110 fa fa-usd blue"></i>
+              </span>
+
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="best-offer-switch" class="col-xs-2 control-label no-padding-right">
+              Best Offer
+            </label>
+            <div class="col-xs-3">
+								<input id="best-offer-switch" class="ace ace-switch ace-switch-6" type="checkbox">
+								<span class="lbl"></span>
+            </div>
+          </div>
+          <div class="form-group" id="best-offer-price" style="display:none;">
+            <label for="accept-price" class="col-xs-2 control-label no-padding-right">
+              Auto accept price
+            </label>
+            <div class="col-xs-3">
+              <span class="input-icon">
+                <input type="text" id="accept-price" class="col-xs-12"><i class="ace-icon bigger-110 fa fa-usd blue"></i>
+              </span>
+            </div>
+            <label for="decline-price" class="col-xs-2 control-label no-padding-right">
+              Auto decline price
+            </label>
+            <div class="col-xs-3">
+              <span class="input-icon">
+                <input type="text" id="decline-price" class="col-xs-12"><i class="ace-icon bigger-110 fa fa-usd blue"></i>
+              </span>
             </div>
           </div>
           <div class="form-group">
             <label for="item-qty" class="col-xs-2 control-label no-padding-right">
-              Item Qty
+              Qty to List
             </label>
             <div class="col-xs-3">
-              <input type="text" id="item-qty" class="col-xs-12">
+              <input type="text" id="item-qty" class="col-xs-12" value="1">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="shipping-serivce" class="col-xs-2 control-label no-padding-right">
+              Shipping Service
+            </label>
+            <div class="col-xs-3">
+              <select class="form-control" id="shipping-serivce">
+  							<option value="AU_Regular">AU_Regular</option>
+  							<option value="AU_Registered">AU_Registered</option>
+  							<option value="AU_RegularParcelWithTracking">AU_RegularParcelWithTracking</option>
+  							<option value="AU_RegularParcelWithTrackingAndSignature">AU_RegularParcelWithTrackingAndSignature</option>
+  							<option value="AU_StandardDelivery">AU_StandardDelivery</option>
+  						</select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="free-shipping-switch" class="col-xs-2 control-label no-padding-right">
+              Free Shipping
+            </label>
+            <div class="col-xs-3">
+								<input id="free-shipping-switch" class="ace ace-switch ace-switch-6" type="checkbox" checked>
+								<span class="lbl"></span>
+            </div>
+          </div>
+          <div class="form-group" id="shipping-cost" style="display:none;">
+            <label for="shipping-cost-one" class="col-xs-2 control-label no-padding-right">
+              Shipping Cost
+            </label>
+            <div class="col-xs-3">
+              <span class="input-icon">
+                <input type="text" id="shipping-cost-one" class="col-xs-12"><i class="ace-icon bigger-110 fa fa-usd blue"></i>
+              </span>
+            </div>
+            <label for="shipping-cost-addition" class="col-xs-2 control-label no-padding-right">
+              Additional item Cost
+            </label>
+            <div class="col-xs-3">
+              <span class="input-icon">
+                <input type="text" id="shipping-cost-addition" class="col-xs-12"><i class="ace-icon bigger-110 fa fa-usd blue"></i>
+              </span>
             </div>
           </div>
           <div class="clearfix form-actions">
 						<div class="col-md-offset-3 col-md-9">
-							<button class="btn btn-info" type="button" id="btn-submit">
+							<button class="btn btn-info" type="button" id="btn-add-listing-submit" style="">
 								<i class="ace-icon fa fa-check bigger-110"></i>
 								Submit
 							</button>
-
+              <button class="btn btn-info" type="button" id="btn-add-listing-verify" style="display:none;">
+								<i class="ace-icon fa fa-check bigger-110"></i>
+								Verify
+							</button>
 							&nbsp; &nbsp; &nbsp;
-							<button class="btn" type="reset">
+							<!-- <button class="btn" type="reset">
 								<i class="ace-icon fa fa-undo bigger-110"></i>
 								Reset
+							</button> -->
+						</div>
+					</div>
+        </form>
+
+      </div>
+    </div>
+<?php Modal::end(); ?>
+<?php
+    Modal::begin([
+        'header' => 'Revise a Listing',
+        'options' =>['id'=>'revise-listing-modal'],
+        'size' => 'modal-lg',
+        'clientOptions' => [
+            'backdrop' => 'static',
+            'keyboard' => false,
+        ],
+        'clientEvents' =>[
+            'show.bs.modal' =>"function(e){showSellerId(e);initReviseModal(e);}",
+            //'shown.bs.modal' => "function(e){preSyncModal(e);}",
+            //'hidden.bs.modal' => "function(e){closeSyncModal(e);}",
+        ],
+    ]); ?>
+    <div class="row">
+      <div class="col-xs-8">
+        <h3>eBay Seller: <span id='ebay-seller-id'></span></h3>
+        <h4>Item ID: <span id='item-id-fill'></span></h4>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-xs-12">
+        <div class="notice-board" style='display:none;'>
+          <div class="alert">
+            <button type="button" class="close" data-dismiss="alert">
+              <i class="ace-icon fa fa-times"></i>
+            </button>
+            <p class='message'>
+
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row" style='display:none;text-align:center;' id="revise-loading">
+      <img src="<?php echo Url::to(['/images/loading.gif']) ?>" alt="" />
+    </div>
+
+    <div class="row" id="revise-form">
+      <div class="col-xs-12">
+        <h3>Revise listing details</h3>
+        <form class="form-horizontal" role="form">
+          <input type="hidden" id="ebay-id-revise" class="col-xs-12">
+
+          <div class="form-group">
+            <label for="item-title" class="col-xs-2 control-label no-padding-right">
+              Item Title
+            </label>
+            <div class="col-xs-10">
+              <input type="text" id="item-title-revise" class="col-xs-12" maxlength="80">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="item-price" class="col-xs-2 control-label no-padding-right">
+              Item Price
+            </label>
+            <div class="col-xs-3">
+              <span class="input-icon">
+              <input type="text" id="item-price-revise" class="col-xs-12"><i class="ace-icon bigger-110 fa fa-usd blue"></i>
+              </span>
+
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="item-qty" class="col-xs-2 control-label no-padding-right">
+              Qty to List
+            </label>
+            <div class="col-xs-3">
+              <input type="text" id="item-qty-revise" class="col-xs-12">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="free-shipping-switch" class="col-xs-2 control-label no-padding-right">
+              Free Shipping
+            </label>
+            <div class="col-xs-3">
+								<input id="free-shipping-switch-revise" class="ace ace-switch ace-switch-6" type="checkbox" checked>
+								<span class="lbl"></span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="shipping-serivce" class="col-xs-2 control-label no-padding-right">
+              Shipping Service
+            </label>
+            <div class="col-xs-3">
+              <select class="form-control" id="shipping-serivce">
+  							<option value="AU_Regular">AU_Regular</option>
+  							<option value="AU_Registered">AU_Registered</option>
+  							<option value="AU_RegularParcelWithTracking">AU_RegularParcelWithTracking</option>
+  							<option value="AU_RegularParcelWithTrackingAndSignature">AU_RegularParcelWithTrackingAndSignature</option>
+  							<option value="AU_StandardDelivery">AU_StandardDelivery</option>
+  						</select>
+            </div>
+          </div>
+          <div class="form-group" id="shipping-cost-revise" style="display:none;">
+            <label for="shipping-cost-one" class="col-xs-2 control-label no-padding-right">
+              Shipping Cost
+            </label>
+            <div class="col-xs-3">
+              <span class="input-icon">
+                <input type="text" id="shipping-cost-one-revise" class="col-xs-12"><i class="ace-icon bigger-110 fa fa-usd blue"></i>
+              </span>
+            </div>
+            <label for="shipping-cost-addition" class="col-xs-2 control-label no-padding-right">
+              Additional item Cost
+            </label>
+            <div class="col-xs-3">
+              <span class="input-icon">
+                <input type="text" id="shipping-cost-addition-revise" class="col-xs-12"><i class="ace-icon bigger-110 fa fa-usd blue"></i>
+              </span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="express-shipping-switch" class="col-xs-2 control-label no-padding-right">
+              Express Postage
+            </label>
+            <div class="col-xs-3">
+								<input id="express-shipping-switch-revise" class="ace ace-switch ace-switch-6" type="checkbox" >
+								<span class="lbl"></span>
+            </div>
+          </div>
+          <div class="form-group" id="shipping-cost-express-revise" style="display:none;">
+            <label for="shipping-cost-express-one-revise" class="col-xs-2 control-label no-padding-right">
+              Shipping Express Cost
+            </label>
+            <div class="col-xs-3">
+              <span class="input-icon">
+                <input type="text" id="shipping-express-cost-one-revise" class="col-xs-12"><i class="ace-icon bigger-110 fa fa-usd blue"></i>
+              </span>
+            </div>
+            <label for="shipping-express-cost-addition-revise" class="col-xs-2 control-label no-padding-right">
+              Additional item Express Cost
+            </label>
+            <div class="col-xs-3">
+              <span class="input-icon">
+                <input type="text" id="shipping-express-cost-addition-revise" class="col-xs-12"><i class="ace-icon bigger-110 fa fa-usd blue"></i>
+              </span>
+            </div>
+          </div>
+          <div class="clearfix form-actions">
+						<div class="col-md-offset-3 col-md-9">
+							<button class="btn btn-info" type="button" id="btn-revise-listing-submit" style="">
+								<i class="ace-icon fa fa-check bigger-110"></i>
+								Submit
 							</button>
+							&nbsp; &nbsp; &nbsp;
+							<!-- <button class="btn" type="reset">
+								<i class="ace-icon fa fa-undo bigger-110"></i>
+								Reset
+							</button> -->
 						</div>
 					</div>
         </form>

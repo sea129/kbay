@@ -32,11 +32,24 @@ $ebayAccounts = $searchModel->getEbayAccouts();
             // ],
             [
               'attribute'=>'main_image',
-              'value'=>function($model, $key, $index, $column){$url = explode('/',$model->main_image);array_splice($url,-1,0,'t');return implode('/',$url);},
-              'format'=>['image','options'=>['width'=>'100px']],
+              'value'=>function($model, $key, $index, $column){
+                return Html::a(Html::img($model->main_image,['width'=>"100"]),Url::to(['view','id'=>$model->id]));
+              },
+              'format'=>'raw',
             ],
+            // [
+            //   'attribute'=>'main_image',
+            //   'value'=>function($model, $key, $index, $column){$url = explode('/',$model->main_image);array_splice($url,-1,0,'t');return implode('/',$url);},
+            //   'format'=>['image','options'=>['width'=>'100px']],
+            // ],
             // 'id',
-            'sku',
+            [
+              'attribute'=>'sku',
+              'value'=>function($model, $key, $index, $widget){
+                return Html::a($model->sku,Url::to(['view','id'=>$model->id]));
+              },
+              'format'=>'raw',
+            ],
             'name',
             // 'mini_desc:ntext',
              'stock_qty',

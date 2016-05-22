@@ -7,7 +7,7 @@ use DTS\eBaySDK\Trading\Services;
 use DTS\eBaySDK\Trading\Types;
 use DTS\eBaySDK\Trading\Enums;
 
-use frontend\models\productebaylisting\ProductEbayListing;
+//use frontend\models\productebaylisting\ProductEbayListing;
 use yii\helpers\ArrayHelper;
 use yii\web\NotFoundHttpException;
 
@@ -17,6 +17,199 @@ use yii\web\NotFoundHttpException;
 class EbayListing extends EbayApi
 {
 
+	// public function verifyAddFixedPriceListing($listingItem)
+	// {
+	// 		$item = $this->buildItem($listingItem);
+	//
+	// 		$request = new Types\VerifyAddFixedPriceItemRequestType();
+	// 		$request->RequesterCredentials = new Types\CustomSecurityHeaderType();
+	// 		$request->RequesterCredentials->eBayAuthToken = $this->token;
+	// 		$request->Item = $item;
+	// 		$service = new Services\TradingService(array(
+	// 	      'apiVersion' => EbayApi::COMPATABILITY_LEVEL,
+	// 	      'siteId' => EbayApi::SITE_ID,
+	// 	      'authToken' => $this->token,
+	// 	      'devId' => EbayApi::DEV_ID,
+	// 	      'appId' => EbayApi::APP_ID,
+	// 	      'certId' => EbayApi::CERT_ID,
+	// 	  ));
+	// 		$response = $service->verifyAddFixedPriceItem($request);
+	// 		$result = [];
+	// 		if (isset($response->Errors)) {
+	// 		    foreach ($response->Errors as $error) {
+	// 					$result['error'][]=$error->ShortMessage;
+	// 		      $result['error'][]=$error->LongMessage;
+	// 		    }
+	// 		}
+	//
+	// 		if($response->Ack !== 'Failure'){
+	// 			$result['fee'] = var_dump($response);
+	// 			// foreach ($response->Fees->Fee as $key => $value) {
+	// 			// 	if($value->Name=='ListingFee'){
+	// 			// 		$result['fee'] = $value->Fee->value;
+	// 			// 	}
+	// 			// 	if(isset($value->PromotionalDiscount)){
+	// 			// 		$result['discount'] = $value->Fee->value;
+	// 			// 	}
+	// 			// }
+	// 			//$result['fee'] = var_dump($response->Fees->Fee[14]->Fee);
+	// 		}
+	// 		//$result['verified'] = $response->Ack !== 'Failure';
+	// 		//return $response->Ack !== 'Failure';
+	// 		//$result['item'] = $item;
+	// 		return $result;
+	// }
+
+	private function buildItem($listingItem)
+	{
+		$item = new Types\ItemType();
+		// bad coding hard coded some constants
+		$item->Country = 'AU';
+		$item->Currency = 'AUD';
+		$item->ListingDuration = Enums\ListingDurationCodeType::C_GTC;
+		$item->ListingType = Enums\ListingTypeCodeType::C_FIXED_PRICE_ITEM;
+		$item->ConditionID = 1000;
+		$item->DispatchTimeMax = 1;
+		$item->ReturnPolicy = new Types\ReturnPolicyType();
+		$item->ReturnPolicy->ReturnsAcceptedOption = 'ReturnsAccepted';
+		$item->ReturnPolicy->RefundOption = 'MoneyBack';
+		$item->ReturnPolicy->ReturnsWithinOption = 'Days_14';
+		$item->ReturnPolicy->ShippingCostPaidByOption = 'Buyer';
+		$item->ShippingDetails = new Types\ShippingDetailsType();
+		$item->ShippingDetails->ShippingType = Enums\ShippingTypeCodeType::C_FLAT;
+
+		$item->Quantity = (int)$listingItem->qty;
+		$item->StartPrice = new Types\AmountType(array('value' => (double)$listingItem->price));
+		$item->BestOfferDetails = new Types\BestOfferDetailsType();
+		//return var_dump($listingItem->bestOffer);
+		if($listingItem->bestOffer!="false"){
+			$item->BestOfferDetails->BestOfferEnabled = true;
+			$item->ListingDetails = new Types\ListingDetailsType();
+			$item->ListingDetails->BestOfferAutoAcceptPrice = new Types\AmountType(array('value' => (double)$listingItem->bestOffer[0]));
+			$item->ListingDetails->MinimumBestOfferPrice = new Types\AmountType(array('value' => (double)$listingItem->bestOffer[1]));
+		}else{
+			$item->BestOfferDetails->BestOfferEnabled = false;
+		}
+
+		$item->PrimaryCategory = new Types\CategoryType();
+		$item->PrimaryCategory->CategoryID = $listingItem->primaryCate;
+		$item->Title = $listingItem->title;
+		$item->Description = "<![CDATA[" . $listingItem->description . "]]>";
+		//$item->Description = "test";
+		$item->SKU = $listingItem->sku;
+		$item->Location = $listingItem->location;
+		$item->PictureDetails = new Types\PictureDetailsType();
+		$item->PictureDetails->GalleryType = Enums\GalleryTypeCodeType::C_GALLERY;
+		$item->PictureDetails->PictureURL = $listingItem->picture;
+		$item->PaymentMethods = array(
+		    'PayPal'
+		);
+		$item->PayPalEmailAddress = $listingItem->paypal;
+		$item->AutoPay = true;
+		$shippingService = new Types\ShippingServiceOptionsType();
+		$shippingService->ShippingServicePriority = 1;
+		$shippingService->ShippingService = $listingItem->shippingService;
+		if($listingItem->shippingCost=="true"){
+			$shippingService->FreeShipping = true;
+			$shippingService->ShippingServiceCost = new Types\AmountType(array('value' => (double)0));
+			$shippingService->ShippingServiceAdditionalCost = new Types\AmountType(array('value' => (double)0));
+		}else{
+			$shippingService->ShippingServiceCost = new Types\AmountType(array('value' => (double)$listingItem->shippingCost[0]));
+			$shippingService->ShippingServiceAdditionalCost = new Types\AmountType(array('value' => (double)$listingItem->shippingCost[1]));
+		}
+
+		$item->ShippingDetails->ShippingServiceOptions[] = $shippingService;
+		return $item;
+	}
+
+	public function addFixedPriceListing($listingItem)
+	{
+		$request = new Types\AddFixedPriceItemRequestType();
+		$request->RequesterCredentials = new Types\CustomSecurityHeaderType();
+		$request->RequesterCredentials->eBayAuthToken = $this->token;
+		//$item = new Types\ItemType();
+		// bad coding
+		// $item->Country = 'AU';
+		// $item->Currency = 'AUD';
+		// $item->ListingDuration = Enums\ListingDurationCodeType::C_GTC;
+		// $item->ListingType = Enums\ListingTypeCodeType::C_FIXED_PRICE_ITEM;
+		// $item->ConditionID = 1000;
+		// $item->DispatchTimeMax = 1;
+		// $item->ReturnPolicy = new Types\ReturnPolicyType();
+		// $item->ReturnPolicy->ReturnsAcceptedOption = 'ReturnsAccepted';
+		// $item->ReturnPolicy->RefundOption = 'MoneyBack';
+		// $item->ReturnPolicy->ReturnsWithinOption = 'Days_14';
+		// $item->ReturnPolicy->ShippingCostPaidByOption = 'Buyer';
+		// $item->ShippingDetails = new Types\ShippingDetailsType();
+		// $item->ShippingDetails->ShippingType = Enums\ShippingTypeCodeType::C_FLAT;
+		//
+		// $item->Quantity = (int)$listingItem->qty;
+		// $item->StartPrice = new Types\AmountType(array('value' => (double)$listingItem->price));;
+		// $item->BestOfferDetails = new Types\BestOfferDetailsType();
+		// //return var_dump($listingItem->bestOffer);
+		// if($listingItem->bestOffer!="false"){
+		// 	$item->BestOfferDetails->BestOfferEnabled = true;
+		// 	$item->ListingDetails = new Types\ListingDetailsType();
+		// 	$item->ListingDetails->BestOfferAutoAcceptPrice = new Types\AmountType(array('value' => (double)$listingItem->bestOffer[0]));
+		// 	$item->ListingDetails->MinimumBestOfferPrice = new Types\AmountType(array('value' => (double)$listingItem->bestOffer[1]));
+		// }else{
+		// 	$item->BestOfferDetails->BestOfferEnabled = false;
+		// }
+		//
+		// $item->PrimaryCategory = new Types\CategoryType();
+		// $item->PrimaryCategory->CategoryID = $listingItem->primaryCate;
+		// $item->Title = $listingItem->title;
+		// $item->Description = "<![CDATA[" . $listingItem->description . "]]>";
+		// //$item->Description = "test";
+		// $item->SKU = $listingItem->sku;
+		// $item->Location = $listingItem->location;
+		// $item->PictureDetails = new Types\PictureDetailsType();
+		// $item->PictureDetails->GalleryType = Enums\GalleryTypeCodeType::C_GALLERY;
+		// $item->PictureDetails->PictureURL = $listingItem->picture;
+		// $item->PaymentMethods = array(
+		//     'PayPal'
+		// );
+		// $item->PayPalEmailAddress = $listingItem->paypal;
+		// $shippingService = new Types\ShippingServiceOptionsType();
+		// $shippingService->ShippingServicePriority = 1;
+		// $shippingService->ShippingService = $listingItem->shippingService;
+		// if($listingItem->shippingCost=="true"){
+		// 	$shippingService->FreeShipping = true;
+		// }else{
+		// 	$shippingService->ShippingServiceCost = new Types\AmountType(array('value' => (double)$listingItem->shippingCost[0]));
+		// 	$shippingService->ShippingServiceAdditionalCost = new Types\AmountType(array('value' => (double)$listingItem->shippingCost[1]));
+		// }
+		//
+		// $item->ShippingDetails->ShippingServiceOptions[] = $shippingService;
+		$item = $this->buildItem($listingItem);
+		$request->Item = $item;
+		//$service = $this->tradingServiceInit();
+		$service = new Services\TradingService(array(
+	      'apiVersion' => EbayApi::COMPATABILITY_LEVEL,
+	      'siteId' => EbayApi::SITE_ID,
+	      'authToken' => $this->token,
+	      'devId' => EbayApi::DEV_ID,
+	      'appId' => EbayApi::APP_ID,
+	      'certId' => EbayApi::CERT_ID,
+	  ));
+		$result['itemID'] = "123";
+		//$result['error'][] = "123";
+		//$result['error'][] = "fail";
+		return $result;
+		$response = $service->addFixedPriceItem($request);
+		$result = [];
+		if (isset($response->Errors)) {
+		    foreach ($response->Errors as $error) {
+					$result['error'][]=$error->ShortMessage;
+		      $result['error'][]=$error->LongMessage;
+		    }
+		}
+		if ($response->Ack !== 'Failure') {
+		    $result['itemID'] = $response->ItemID;
+		}
+
+		return $result;
+	}
 	/**
 	 * common code of init get active listing request.
 	 */
@@ -39,6 +232,100 @@ class EbayListing extends EbayApi
 		return $request;
 	}
 
+	public function reviseItem($listingItem){
+		$service = $this->tradingServiceInit();
+		$request = new Types\ReviseFixedPriceItemRequestType();
+		$request->RequesterCredentials = new Types\CustomSecurityHeaderType();
+		$request->RequesterCredentials->eBayAuthToken = $this->token;
+		$item = new Types\ItemType();
+		$item->ItemID = $listingItem->item_id;
+		$item->Description = "<![CDATA[" . $listingItem->description . "]]>";
+		$item->StartPrice = new Types\AmountType(array('value' => (double)$listingItem->price));
+		$item->Quantity = (int)$listingItem->qty;
+		$item->Title = $listingItem->title;
+		$item->ShippingDetails = new Types\ShippingDetailsType();
+		$item->ShippingDetails->ShippingType = Enums\ShippingTypeCodeType::C_FLAT;
+		$shippingService = new Types\ShippingServiceOptionsType();
+		$shippingService->ShippingServicePriority = 1;
+
+		if($listingItem->shippingCost[0]=="true"){
+			$shippingService->FreeShipping = true;
+			$shippingService->ShippingService = $listingItem->shippingCost[1];
+		}else{
+			$shippingService->ShippingServiceCost = new Types\AmountType(array('value' => (double)$listingItem->shippingCost[0]));
+			$shippingService->ShippingServiceAdditionalCost = new Types\AmountType(array('value' => (double)$listingItem->shippingCost[1]));
+			$shippingService->ShippingService = $listingItem->shippingCost[2];
+		}
+
+		$item->ShippingDetails->ShippingServiceOptions[] = $shippingService;
+		if($listingItem->shippingExpressCost!="false"){
+			$shippingServiceExpress = new Types\ShippingServiceOptionsType();
+			$shippingServiceExpress->ShippingServicePriority = 2;
+			$shippingServiceExpress->ShippingService = 'AU_ExpressDelivery';
+			$shippingServiceExpress->ShippingServiceCost = new Types\AmountType(array('value' => (double)$listingItem->shippingExpressCost[0]));
+			$shippingServiceExpress->ShippingServiceAdditionalCost = new Types\AmountType(array('value' => (double)$listingItem->shippingExpressCost[1]));
+			$item->ShippingDetails->ShippingServiceOptions[] = $shippingServiceExpress;
+		}
+
+		$request->Item = $item;
+		$response = $service->reviseFixedPriceItem($request);
+		$result = [];
+		if (isset($response->Errors)) {
+		    foreach ($response->Errors as $error) {
+					$result['error'][]=$error->ShortMessage;
+		      $result['error'][]=$error->LongMessage;
+		    }
+		}
+		if ($response->Ack !== 'Failure') {
+		    $result['itemID'] = $response->ItemID;
+		}
+
+		return $result;
+		//return $response;
+	}
+	public function getOneItem($itemID){
+		$item = $this->getOneItemOnly($itemID);
+		if($item!=='error'){
+			$result = [
+				'price'=>$item->Item->SellingStatus->CurrentPrice->value,
+				'qty'=>$item->Item->Quantity-$item->Item->SellingStatus->QuantitySold,
+				'title'=>$item->Item->Title,
+				'sku'=>$item->Item->SKU,
+				'qtySold'=>$item->Item->SellingStatus->QuantitySold,
+			];
+			$shippingServiceOptions = [
+				[
+					'shippingService'=>$item->Item->ShippingDetails->ShippingServiceOptions[0]->ShippingService,
+					'shippingCost'=>$item->Item->ShippingDetails->ShippingServiceOptions[0]->ShippingServiceCost->value,
+					'shippingAddCost'=>isset($item->Item->ShippingDetails->ShippingServiceOptions[0]->ShippingServiceAdditionalCost)?$item->Item->ShippingDetails->ShippingServiceOptions[0]->ShippingServiceAdditionalCost->value:0,
+				],
+			];
+			if(isset($item->Item->ShippingDetails->ShippingServiceOptions[1])){
+				$shippingServiceOptions[]=[
+					'shippingService'=>$item->Item->ShippingDetails->ShippingServiceOptions[1]->ShippingService,
+					'shippingCost'=>$item->Item->ShippingDetails->ShippingServiceOptions[1]->ShippingServiceCost->value,
+					'shippingAddCost'=>isset($item->Item->ShippingDetails->ShippingServiceOptions[1]->ShippingServiceAdditionalCost)?$item->Item->ShippingDetails->ShippingServiceOptions[1]->ShippingServiceAdditionalCost->value:0,
+
+				];
+			}
+			$result['shippingServiceOptions']=$shippingServiceOptions;
+			return $result;
+		}else{
+			return "error";
+		}
+	}
+	private function getOneItemOnly($itemID){
+		$service = $this->tradingServiceInit();
+		$itemRequest = $this->getItemReqInit();
+		$itemRequest->ItemID = $itemID;
+		$reqItem = $service->getItem($itemRequest);
+		if ($reqItem->Ack !== 'Failure' && isset($reqItem->Item)) {
+			return $reqItem;
+			//return $reqItem->Item;
+		}else{
+			return "error";
+		}
+	}
 	public function getItemPicUrl($itemID){
 		$service = $this->tradingServiceInit();
 		$itemRequest = $this->getItemReqInit();

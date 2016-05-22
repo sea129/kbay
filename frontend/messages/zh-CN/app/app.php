@@ -8,6 +8,10 @@
 		'Get Orders'=>'下载订单',
 		'Orders'=>'订单管理',
 		'Ebay Orders'=>'eBay 订单列表',
+		'User Setting'=>'用户设置',
+		'Listings'=>'刊登',
+		'Active Listings'=>'在线刊登',
+		'Sync Listings'=>'同步刊登',
 	]
 
 

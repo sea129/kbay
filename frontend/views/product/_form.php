@@ -23,6 +23,7 @@ use kartik\file\FileInput;
 $this->registerJsFile("//www.fuelcdn.com/fuelux/3.12.0/js/fuelux.min.js",['depends' => [\yii\web\JqueryAsset::className()]]);
 ProductAsset::register($this);
  ?>
+
 <div class="product-form col-xs-12">
 
     <?php $form = ActiveForm::begin([
@@ -35,51 +36,87 @@ ProductAsset::register($this);
     <div class="form-group">
 
         <label class="col-sm-2 control-label no-padding-right" for="product-sku"><?= Html::encode(Yii::t('app/product', 'Uploaded Product Image')); ?></label>
-        <div class="col-sm-2">
-          <?php if(isset($model->main_image)){//update product ?>
-              <img src='<?php echo $model->main_image; ?>' width='200' id='main_image_ph'>
-            <?php }else{//create product ?>
-              <img src='<?php echo Url::to('/images/no-product-image.png') ?>' width='200' id='main_image_ph'>
-            <?php } ?>
+        <div class="col-sm-5">
+          <?php
+
+                echo FileInput::widget([
+                  'name'=>'main-image-upload',
+                  // 'options'=>[
+                  //     'multiple'=>true
+                  // ],
+                  'pluginOptions' => [
+                      'initialPreview'=>[
+                          Html::img(isset($model->main_image)?$model->main_image:"/images/no-product-image.png", ['class'=>'file-preview-image']),
+                      ],
+                      'initialPreviewConfig'=>[
+                        ['width'=>'200px','key'=>100],
+                      ],
+                      'maxFileSize'=>'2000',//kb
+                      'allowedFileTypes' => ['image'],
+                      'allowedFileExtensions'=> ["jpg", "png", "gif"],
+                      'previewFileType'=>'image',
+                      'browseClass' => 'btn btn-success btn-sm',
+                      'uploadClass' => 'btn btn-danger btn-sm',
+                      'removeClass' => 'btn btn-info btn-sm',
+                      'maxFileCount' => 1,
+                      // 'maxImageWidth' => 250,
+                      // 'maxImageHeight' => 250,
+                      // 'resizeImage' => true,
+                      'uploadUrl' => Url::to('/product/upload-main-image'),
+                      //'layoutTemplates'=>['footer'=>''],
+
+                  ],
+                  'pluginEvents'=>[
+                    'fileuploaded'=>'function(event, data, previewId, index){
+                      uploadComplete(data.response);
+                    }',
+                    'filebatchuploadcomplete'=>'function(event, files, extra){
+
+                    }',
+
+                  ],
+                ]);
+          ?>
         </div>
-
-        <div class="col-sm-6">
-        <?php Pjax::begin(['id' => 'product-image']); ?>
-        <?php
-              echo FileInput::widget([
-                'name'=>'main-image-upload',
-                'pluginOptions' => [
-                    'maxFileSize'=>'200',//kb
-                    'allowedFileTypes' => ['image'],
-                    'allowedFileExtensions'=> ["jpg", "png", "gif"],
-                    'previewFileType'=>'image',
-                    'browseClass' => 'btn btn-success btn-sm',
-                    'uploadClass' => 'btn btn-danger btn-sm',
-                    'removeClass' => 'btn btn-info btn-sm',
-                    'maxFileCount' => 1,
-                    // 'maxImageWidth' => 250,
-                    // 'maxImageHeight' => 250,
-                    // 'resizeImage' => true,
-                    'uploadUrl' => Url::to('http://uploads.im/api'),
-                    'layoutTemplates'=>['footer'=>''],
-
-                ],
-                'pluginEvents'=>[
-                  'filepreupload'=>'function(event, data, previewId, index){
-                    data.jqXHR.abort();
-                    uploadMainImage(data.files);
-                  }',
-
-                ],
-              ]);
-        ?>
-        <?php Pjax::end(); ?>
-        </div>
-        <div class="col-sm-2">
+        <div class="col-sm-1">
           <?php echo $form->field($model,'main_image',['labelOptions'=>['style'=>'display:none;'],'options'=>['style'=>'']])->hiddenInput(); ?>
         </div>
-    </div>
 
+    </div>
+    
+    <!-- <div class="form-group">
+      <label class="col-sm-2 control-label no-padding-right" for=""></label>
+      <div class="col-sm-10">
+        <?php
+              // echo FileInput::widget([
+              //   'name'=>'main-image-upload',
+              //   'pluginOptions' => [
+              //       'maxFileSize'=>'2000',//kb
+              //       'allowedFileTypes' => ['image'],
+              //       'allowedFileExtensions'=> ["jpg", "png", "gif"],
+              //       'previewFileType'=>'image',
+              //       'browseClass' => 'btn btn-success btn-sm',
+              //       'uploadClass' => 'btn btn-danger btn-sm',
+              //       'removeClass' => 'btn btn-info btn-sm',
+              //       'maxFileCount' => 1,
+              //       'maxImageWidth' => 250,
+              //       'maxImageHeight' => 250,
+              //       'resizeImage' => true,
+              //       'uploadUrl' => Url::to('/product/upload-main-image'),
+              //       //'layoutTemplates'=>['footer'=>''],
+              //
+              //   ],
+                // 'pluginEvents'=>[
+                //   'filepreupload'=>'function(event, data, previewId, index){
+                //     data.jqXHR.abort();
+                //     uploadMainImage(data.files);
+                //   }',
+                //
+                // ],
+              //]);
+        ?>
+      </div>
+    </div> -->
 
     <!-- 分类 -->
     <?php Pjax::begin(['id' => 'category-selection']); ?>
@@ -195,7 +232,7 @@ ProductAsset::register($this);
                     'class' => 'ace ace-switch ace-switch-6',
                 ]) ?>
 
-    
+
     <!-- 每单数量 -->
     <?= $form->field($model, 'qty_per_order',[
                     'labelOptions'=>['class'=>'col-sm-2 control-label no-padding-right'],

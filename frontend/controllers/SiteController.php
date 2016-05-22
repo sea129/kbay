@@ -13,6 +13,9 @@ use yii\web\Controller;
 use yii\filters\VerbFilter;
 use yii\filters\AccessControl;
 
+use Doctrine\Common\Cache\FilesystemCache;
+use RemoteImageUploader;
+
 /**
  * Site controller
  */
@@ -65,6 +68,7 @@ class SiteController extends Controller
         ];
     }
 
+    
     /**
      * Displays homepage.
      *

@@ -62,7 +62,8 @@ use kartik\grid\GridView;
          <td class="">
            <?php echo $transaction->item_id; ?><br><br>
            <?php echo $transaction->item_sku; ?><br><br>
-           <?php echo $transaction->item_title; ?>
+           <?php echo $transaction->item_title; ?><br><br>
+           <span style='color:red'><?php echo $model->checkout_message; ?></span>
          </td>
          <td class="right">
            <?php echo $transaction->qty_purchased; ?>

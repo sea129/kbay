@@ -17,7 +17,7 @@ use frontend\models\orders\EbayTransaction;
 use frontend\components\ebayapi\EbayListing;
 use kartik\mpdf\Pdf;
 use frontend\models\UserSetting;
-
+use frontend\components\JHelper;
 class OrderController extends \yii\web\Controller
 {
     public function behaviors()
@@ -54,12 +54,64 @@ class OrderController extends \yii\web\Controller
         ]);
     }
 
+    /**
+     * Loop orders and get shipping label
+     */
+    private function getShippingLabel($orders){
+      $label = '';
+      $userSetting = UserSetting::findOne(Yii::$app->user->id);
+      $packSign = [
+        'eParcel'=>false,
+        'fastway'=>false,
+        'buyerCount'=>1,
+        'checkoutMessage'=>false,
+      ];
+      foreach ($orders as $order) {
+        $transLabel = '';
+        $transactions = $order->getEbayTransactions()->all();
+        $totalCost = 0;
+        $weight = 0;
 
+        foreach ($transactions as $transaction) {
+          if($product = $transaction->getProduct()->one()){
+            $weight += ($product['weight']*$transaction['qty_purchased']);
+            $totalCost += ($product['cost']*$transaction['qty_purchased']);
+          }else{
+            $transLabel .= "Error! Can't find the product ".$transaction['item_sku'];
+          }
+        }
+        $weight = round($weight/1000,2);
+        if($userSetting->fastway_indicator&&JHelper::isFastwayAvailable($order['recipient_postcode'])){
+          $packSign['fastway'] = true;
+        }
+        if ($totalCost>=$userSetting->min_cost_tracking) {
+          $packSign['eParcel'] = true;
+        }
+        if($order['buyer_count']>1){
+          $packSign['buyerCount'] = $order['buyer_count'];
+        }
+        if($order['checkout_message']!=NULL){
+          $packSign['checkoutMessage'] = true;
+        }
+
+      }
+    }
     public function actionDownloadLabel()
     {
       $post = Yii::$app->request->post();
       $notLabelOrder = EOrder::find()->where(['label'=>0,'status'=>0])->all();
-
+      //$subQuery = (new \yii\db\Query())->select(['t.buyer_id','COUNT(t.buyer_id) as buyer_count'])->from('ebay_order t')->groupBy(['t.buyer_id']);
+      // $notLabelOrder = (new \yii\db\Query())
+      //               ->select(['x.*','y.buyer_count'])
+      //               ->from('ebay_order x')
+      //               ->where(['x.label'=>0,'x.status'=>0])
+      //               ->leftJoin(['y' => $subQuery],'y.buyer_id=x.buyer_id')
+      //               ->all();
+      // echo "<pre>";
+      // return print_r($notLabelOrder);
+      // echo "</pre>";
+      //return $this->getShippingLabel($notLabelOrder);
+      //$label = $this->getShippingLabel($notLabelOrder);
       $label = '';
       $objPHPExcel = \PHPExcel_IOFactory::load('./labels/'.'eparcel_template20151023.xlsx');
       $excelRow = 2;
@@ -149,6 +201,8 @@ class OrderController extends \yii\web\Controller
       // ]);
       return \Yii::$app->response->sendFile($filename);
     }
+
+
     public function actionFetchIndex(){
       $query = (new \yii\db\Query())
             ->select([
@@ -161,6 +215,7 @@ class OrderController extends \yii\web\Controller
               'order_log.status',
               'sum(case when ebay_order.status = 0 then 1 else 0 end) AS "Not Shipped"',
               'sum(case when ebay_order.label = 0 then 1 else 0 end) AS "Not Label"',
+              'sum(case when ebay_order.status = -1 then 1 else 0 end) AS "Not Paid"',
             ])
             ->from('ebay_account')
             ->leftJoin('order_log','ebay_account.id = order_log.ebay_id')
@@ -199,6 +254,36 @@ class OrderController extends \yii\web\Controller
         }
       }
     }
+    public function actionTestOrder(){
+      $createFrom=new \DateTime('2016-05-18');
+      $createTo=new \DateTime('2016-05-26');
+      $ebayOrder = new EbayOrder(3);
+      $preFetch = $ebayOrder->getPreFetchInfo($createFrom,$createTo);
+      for ($i=1; $i<=7; $i++) {
+        $orders = $ebayOrder->mainFetch($createFrom,$createTo,$i);
+        foreach ($orders['orders'] as $order) {
+          // echo "<pre>";
+          //   echo var_dump($order)."<br/>";
+          //   echo "</pre>";
+          echo var_dump($order->OrderID.":".$order->PaidTime->format('Y-m-d H:i:s'))."<br/>";
+        }
+      }
+      // echo "<pre>";
+      // echo var_dump($preFetch);
+      // echo "</pre>";
+      return 1;
+      $orders = $ebayOrder->mainFetch($createFrom,$createTo,4);
+      foreach ($orders['orders'] as $order) {
+        // echo "<pre>";
+        //   echo var_dump($order)."<br/>";
+        //   echo "</pre>";
+        echo var_dump($order->ShippingServiceSelected->ShippingService)."<br/>";
+      }
+      return 1;
+      echo "<pre>";
+      return print_r($orders);
+      echo "</pre>";
+    }
     public function actionMainFetch(){
         if(Yii::$app->request->isAjax){
           Yii::$app->response->format = Response::FORMAT_JSON;
@@ -216,13 +301,17 @@ class OrderController extends \yii\web\Controller
              //$result['test']=var_dump($orders['orders']);
             //return $result;
             foreach ($orders['orders'] as $order) {
-
-              $thisOrder = new EOrder();
+              $thisOrder = EOrder::findOne(['ebay_order_id'=>$order->OrderID]);
+              if($thisOrder===null){
+                $thisOrder = new EOrder();
+              }
+              //$thisOrder = new EOrder();
               if(isset($order->ShippedTime)){
                 $thisOrder->status = 1;
                 $thisOrder->shipped_time = $order->ShippedTime->format('Y-m-d H:i:s');
               }else{
                 $thisOrder->status = 0;
+                $thisOrder->shipped_time = NULL;
               }
               $thisOrder->ebay_id = $post['ebayID'];
               $thisOrder->user_id = Yii::$app->user->id;
@@ -235,6 +324,8 @@ class OrderController extends \yii\web\Controller
               $thisOrder->created_time = $order->CreatedTime->format('Y-m-d H:i:s');
               if(isset($order->PaidTime)){
                 $thisOrder->paid_time = $order->PaidTime->format('Y-m-d H:i:s');
+              }else{//order not paid
+                $thisOrder->paid_time = NULL;
               }
 
               $thisOrder->recipient_name = $order->ShippingAddress->Name;
@@ -245,12 +336,23 @@ class OrderController extends \yii\web\Controller
               $thisOrder->recipient_state = $order->ShippingAddress->StateOrProvince;
               $thisOrder->recipient_postcode =$order->ShippingAddress->PostalCode;
               $thisOrder->checkout_message = $order->BuyerCheckoutMessage;
-
+              $thisOrder->shipping_service = $order->ShippingServiceSelected->ShippingService;
               if(!$thisOrder->save()){
-                $result['savingError'][]=$thisOrder->errors." Buyer ID: ".$thisOrder->BuyerUserID;
+                // foreach ($thisOrder->errors as $attribute => $error ) {
+                //   $savingErrorMessage = "Buyer ID: ".$order->BuyerUserID."<br/>";
+                //   foreach ($error as $errorMessage) {
+                //     $savingErrorMessage .= $errorMessage;
+                //   }
+                //   $result['savingError'][] = $savingErrorMessage;
+                // }
+                //$result['savingError'][]=$thisOrder->errors." Buyer ID: ".$thisOrder->BuyerUserID;
+                $result['savingError'][]=[$order->OrderID=>$thisOrder->errors];
               }else{
                 foreach ($order->TransactionArray->Transaction as $transaction) {
-                  $thisTransaction = new EbayTransaction();
+                  if(!$thisTransaction=EbayTransaction::findOne($transaction->TransactionID)){
+                    $thisTransaction = new EbayTransaction();
+                  }
+                  //$thisTransaction = new EbayTransaction();
                   $thisTransaction->transaction_id = $transaction->TransactionID;
                   $thisTransaction->ebay_order_id = $thisOrder->id;
                   $thisTransaction->buyer_email = $transaction->Buyer->Email;
@@ -276,7 +378,8 @@ class OrderController extends \yii\web\Controller
                   }
 
                   if(!$thisTransaction->save()){
-                    $result['savingError'][]=$thisTransaction->errors." Buyer ID: ".$thisOrder->BuyerUserID;
+                    //$result['savingError'][]=$thisTransaction->errors." Buyer ID: ".$thisOrder->BuyerUserID;
+                    $result['savingError'][]=$thisTransaction->errors;
                   }
 
                 }

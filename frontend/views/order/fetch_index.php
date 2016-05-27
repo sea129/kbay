@@ -74,11 +74,31 @@ OrderFetchAsset::register($this);
         ],
         //'status',
         [
-          'attribute'=>'Not Shipped',
+          //'attribute'=>'Not Paid',
+          'class'=>'yii\grid\ActionColumn',
+          'header'=>Yii::t('app/order', 'Not Paid', []),
+          'template' => '{update-not-paid}',
+          'buttons'=>[
+            'update-not-paid'=>function($url, $model, $key){
+              return Html::button('<span class="ace-icon fa fa-refresh"></span>'.$model['Not Paid'],
+                [
+                  'type'=>'button',
+                  'class'=>'btn btn-xs btn-warning btn-update-not-paid',
+                  'data-ebay-id'=>$model['ebay_id'],
+                  //'data-create-to'=>$model['create_to'],
+                  'data-toggle'=>'modal',
+                  'data-target'=>'#update-modal']);
+            },
+          ],
         ],
         [
           'attribute'=>'Not Label',
         ],
+        [
+          'attribute'=>'Not Shipped',
+        ],
+
+
         [
           'class'=>'yii\grid\ActionColumn',
           'header'=>Yii::t('app/order', 'Get Orders', []),
@@ -162,4 +182,53 @@ OrderFetchAsset::register($this);
 
     ?>
    <?php Modal::end();
+ ?>
+<?php
+Modal::begin([
+    'header' => 'Updating Not Paid Orders',
+    'options' =>['id'=>'update-modal'],
+    'size' => 'modal-lg',
+    'clientOptions' => [
+        'backdrop' => 'static',
+        'keyboard' => false,
+    ],
+    'clientEvents' =>[
+        //'show.bs.modal' =>"function(){progreeBarInit();}",
+        'shown.bs.modal' => "function(e){updateNotPaid(e);}",
+        'hidden.bs.modal' => "function(e){location.reload();}",
+    ],
+]); ?>
+<div class="notice-board" style='display:none;'>
+  <div class="alert alert-block">
+    <button type="button" class="close" data-dismiss="alert">
+      <i class="ace-icon fa fa-times"></i>
+    </button>
+    <p class='message'>
+
+    </p>
+  </div>
+</div>
+<div class="">
+  <p style='text-align:center;'>
+    <i class="ace-icon fa fa-spinner fa-spin orange bigger-275"></i>
+  </p>
+
+</div>
+
+<div class="" style='display:none;' id="saving-error">
+  <div class="alert alert-block alert-success">
+    <p class="">
+      Completed!
+    </p>
+  </div>
+  <div id='error-scroll' style="max-height: 125px;">
+    <ul class="list-unstyled spaced" >
+    </ul>
+  </div>
+
+</div>
+<?php
+
+?>
+<?php Modal::end();
  ?>

@@ -2,6 +2,7 @@ $(function(){
 
   fetchInit();
   $('#btn-main-fetch').click(function(){
+    savingError = [];
     $(this).addClass('disabled').prop('disabled', true);
     fetch(1, ebayID, totalPages);
     $('#fetch-progress-bar').fadeIn();
@@ -19,10 +20,8 @@ $(function(){
 
 function fetchInit(){
   ebayID = false;
-  OrderCount = 0;
   totalPages = 0;
-  saveLog = true;
-  savingError = [];
+
   $('#pre-fetch-loading').show();
   $('#btn-main-fetch').removeClass('disabled').prop('disabled', false).hide();
   $('#no-orders').html('');
@@ -42,6 +41,9 @@ function closeSyncModal(e){
   location.reload();
 }
 
+function updateNotPaid(e){
+  
+}
 function preFetchModal(e){
   ebayID = $(e.relatedTarget).data('ebayId');
   createTo = $(e.relatedTarget).data('createTo');
@@ -103,28 +105,26 @@ function fetch(pageNumber,ebayID,totalPages){
       data: {ebayID:ebayID,pageNumber:pageNumber}
     })
     .done(function(result) {
-      if(result.status==='success'){
+      if(result.status==='success'){//connected to ebay good
 
         progressBar(Math.floor((pageNumber/totalPages)*100));
         pageNumber++;
-        if(typeof result.savingError !== 'undefined'){
+        if(typeof result.savingError !== 'undefined'){//not saved to database
 
           $.each(result.savingError,function(index,errors){
-            //console.log(errors.ebay_order_id);
-
-            if(errors.ebay_order_id === undefined){
-              saveLog = false;
-            }
-            $.each(errors,function(index,error){
-              savingError.push(error[0]);
+            $.each(errors,function(key,value){
+              var _orderID = key
+              $.each(value,function(index,error){
+                savingError.push(_orderID+' : '+error);
+              });
+              //savingError.push(key+' : '+value);
             });
           });
 
         }
         fetch(pageNumber,ebayID,totalPages);
-        //return true;
-      }else{
 
+      }else{//connection bad
 
         $('.notice-board .message').html(result.message);
         $('.notice-board .alert').toggleClass('alert-danger').fadeIn();
@@ -141,7 +141,7 @@ function fetch(pageNumber,ebayID,totalPages){
       //console.log("complete");
     });
   }else{
-    if(saveLog){
+    if(savingError.length===0){
       $.ajax({
         url: 'save-log',
         type: 'POST',
@@ -162,8 +162,7 @@ function fetch(pageNumber,ebayID,totalPages){
         //console.log("complete");
       });
 
-    }
-    if(savingError.length>0){
+    }else{
       $.each(savingError,function(index,error){
         $('#saving-error ul').append("<li><i class='ace-icon fa fa-times bigger-110 red'></i>"+error+"</li>");
       });

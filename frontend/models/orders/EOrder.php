@@ -4,7 +4,7 @@ namespace frontend\models\orders;
 
 use Yii;
 use frontend\models\ebayaccounts\EbayAccount;
-
+use common\models\User;
 
 /**
  * This is the model class for table "ebay_order".
@@ -51,13 +51,15 @@ class EOrder extends \frontend\models\base\MyActiveRecord
         return [
             [['fetched_at', 'created_time', 'paid_time', 'shipped_time'], 'safe'],
             [['status', 'ebay_id', 'user_id', 'sale_record_number', 'label'], 'integer'],
-            [['ebay_id', 'user_id', 'ebay_order_id', 'ebay_seller_id', 'buyer_id', 'recipient_name', 'recipient_address1', 'recipient_city', 'recipient_state', 'recipient_postcode'], 'required'],
+            [['ebay_id', 'user_id', 'ebay_order_id', 'ebay_seller_id', 'buyer_id', 'recipient_name', 'recipient_address1', 'recipient_city', 'recipient_state', 'recipient_postcode', 'shipping_service'], 'required'],
             [['total'], 'number'],
             [['ebay_order_id', 'ebay_seller_id', 'recipient_name', 'recipient_city', 'recipient_state'], 'string', 'max' => 64],
-            [['buyer_id', 'recipient_address1', 'recipient_address2'], 'string', 'max' => 128],
+            [['buyer_id', 'recipient_address1', 'recipient_address2', 'shipping_service'], 'string', 'max' => 128],
             [['recipient_phone', 'recipient_postcode'], 'string', 'max' => 32],
             [['checkout_message'], 'string', 'max' => 256],
-            [['ebay_order_id'], 'unique']
+            [['ebay_order_id'], 'unique'],
+            [['ebay_id'], 'exist', 'skipOnError' => true, 'targetClass' => EbayAccount::className(), 'targetAttribute' => ['ebay_id' => 'id']],
+            [['user_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['user_id' => 'id']],
         ];
     }
 
@@ -126,7 +128,7 @@ class EOrder extends \frontend\models\base\MyActiveRecord
     }
 
     public function getNonLabelCount(){
-      
+
     }
     // public function getItemPicUrl($itemID){
     //   $ebayListing = new EbayListing($this->ebay_id);

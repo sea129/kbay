@@ -3,7 +3,7 @@
 namespace frontend\models;
 
 use Yii;
-
+use common\models\User;
 /**
  * This is the model class for table "user_setting".
  *
@@ -29,7 +29,8 @@ class UserSetting extends \yii\db\ActiveRecord
     {
         return [
             [['user_id'], 'required'],
-            [['user_id', 'min_cost_tracking'], 'integer']
+            [['user_id', 'min_cost_tracking', 'fastway_indicator'], 'integer'],
+            [['user_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['user_id' => 'id']],
         ];
     }
 
@@ -39,8 +40,9 @@ class UserSetting extends \yii\db\ActiveRecord
     public function attributeLabels()
     {
         return [
-            'user_id' => Yii::t('app/usersetting', 'User ID'),
-            'min_cost_tracking' => Yii::t('app/usersetting', 'Min Cost Tracking'),
+            'user_id' => 'User ID',
+            'min_cost_tracking' => 'Min Cost Tracking',
+            'fastway_indicator' => 'Fastway Indicator',
         ];
     }
 

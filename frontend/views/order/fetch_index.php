@@ -80,12 +80,13 @@ OrderFetchAsset::register($this);
           'template' => '{update-not-paid}',
           'buttons'=>[
             'update-not-paid'=>function($url, $model, $key){
+              $appSetting = \common\models\setting\AppSetting::findOne('fetch_order_entries_per_page');
               return Html::button('<span class="ace-icon fa fa-refresh"></span>'.$model['Not Paid'],
                 [
                   'type'=>'button',
                   'class'=>'btn btn-xs btn-warning btn-update-not-paid',
                   'data-ebay-id'=>$model['ebay_id'],
-                  //'data-create-to'=>$model['create_to'],
+                  'data-total-pages'=>$model['Not Paid']/$appSetting->number_value,
                   'data-toggle'=>'modal',
                   'data-target'=>'#update-modal']);
             },
@@ -112,7 +113,7 @@ OrderFetchAsset::register($this);
                   'data-ebay-id'=>$model['ebay_id'],
                   //'data-create-to'=>$model['create_to'],
                   'data-toggle'=>'modal',
-                  'data-target'=>'#fetch-modal']);
+                  'data-target'=>'#download-orders-modal']);
             },
           ],
         ],
@@ -120,6 +121,39 @@ OrderFetchAsset::register($this);
   ]); ?>
 </div>
 <?php echo Html::endForm(); ?>
+<?php
+  Modal::begin([
+    'header' => 'Download Orders',
+    'options' => ['id'=>'download-orders-modal'],
+    'size' => 'modal-lg',
+    'clientOptions' => [
+        'backdrop' => 'static',
+        'keyboard' => false,
+    ],
+    'clientEvents' =>[
+        //'show.bs.modal' =>"function(){progreeBarInit();}",
+        'shown.bs.modal' => "function(e){downloadOrdersInit(e)}",
+        'hidden.bs.modal' => "function(e){}",
+    ],
+  ]);
+
+ ?>
+ <div class="download-order-container" style="max-height:500px;min-height:500px;">
+  <ul class="list-unstyled spaced fa-ul">
+		<li>
+			<!-- <i class="ace-icon fa fa-check bigger-110 green"></i> -->
+      <i class="fa fa-refresh fa-spin fa-fw fa-li fa-lg"></i>
+			下载订单中...
+		</li>
+
+
+
+  </ul>
+  <p class="spinner-container">
+
+  </p>
+ </div>
+ <?php Modal::end(); ?>
 <?php
     Modal::begin([
         'header' => 'Fetching Orders',
@@ -209,8 +243,10 @@ Modal::begin([
   </div>
 </div>
 <div class="">
+
   <p style='text-align:center;'>
-    <i class="ace-icon fa fa-spinner fa-spin orange bigger-275"></i>
+
+    <i class="ace-icon fa fa-spinner fa-spin orange bigger-275" style=''></i>
   </p>
 
 </div>

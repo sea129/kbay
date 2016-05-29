@@ -17,11 +17,47 @@ $(function(){
   // });
 
 });
-
+function getListObj(){
+  return $('.download-order-container ul');
+}
+function downloadOrders(ebayID, pageNum)
+{
+  getListObj().append("<li><i class='fa fa-refresh fa-spin fa-fw fa-li fa-lg'></i>下载第"+pageNum+"页...</li>");
+  $.ajax({
+    url: 'download',
+    type: 'POST',
+    data: {ebayID:ebayID,pageNum}
+  })
+  .done(function(result) {
+    if(result.Error){
+      $('.download-order-container ul li').last().children('i').removeClass('fa-refresh fa-spin').addClass('fa-exclamation-triangle red');
+      $.each(result.Error,function(index,value){
+        getListObj().append("<li style='color:red'><i class='fa fa-times fa-fw fa-li fa-lg'></i>"+value+"</li>");
+      });
+      $('.download-order-container ul li').first().children('i').removeClass('fa-refresh fa-spin').addClass('fa-exclamation-triangle red');
+      $('.download-order-container').ace_scroll({size:500});
+    }else{
+      
+    }
+    // if(result.moreOrders == true){
+    //   $('.download-order-container ul li').last().children('i').removeClass('fa-refresh fa-spin').addClass('fa-check green');
+    //   pageNum++;
+    //   downloadOrders(ebayID, pageNum);
+    // }
+    console.log(result);
+  })
+  .fail(function() {
+    //console.log("error");
+  })
+  .always(function() {
+    //console.log("complete");
+  });
+}
+function downloadOrdersInit(e){
+  var ebayID = $(e.relatedTarget).data('ebayId');
+  downloadOrders(ebayID,1);
+}
 function fetchInit(){
-  ebayID = false;
-  totalPages = 0;
-
   $('#pre-fetch-loading').show();
   $('#btn-main-fetch').removeClass('disabled').prop('disabled', false).hide();
   $('#no-orders').html('');
@@ -42,11 +78,30 @@ function closeSyncModal(e){
 }
 
 function updateNotPaid(e){
-  
+  var ebayID = $(e.relatedTarget).data('ebayId');
+  var totalPages = $(e.relatedTarget).data('notPaidCount');
+  console.log(notPaidCount);
+  // $.ajax({
+  //   url: 'update-not-paid',
+  //   type: 'POST',
+  //   data: {ebayID:ebayID}
+  // })
+  // .done(function() {
+  //   console.log("success");
+  // })
+  // .fail(function() {
+  //   console.log("error");
+  // })
+  // .always(function() {
+  //   console.log("complete");
+  // });
+}
+function getOrdersAjax(ebayID, pageNumber, totalPages){
+
 }
 function preFetchModal(e){
-  ebayID = $(e.relatedTarget).data('ebayId');
-  createTo = $(e.relatedTarget).data('createTo');
+  var ebayID = $(e.relatedTarget).data('ebayId');
+  var createTo = $(e.relatedTarget).data('createTo');
   $.ajax({
     url: 'pre-fetch',
     type: 'POST',

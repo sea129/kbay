@@ -18,8 +18,8 @@ use Yii;
  */
 class OrderLog extends \yii\db\ActiveRecord
 {
-    const STATUS_PRE_FETCH = 1;
-    const STATUS_DONE_FETCH = 2;
+    const STATUS_DOWNLOAD_INIT = 1;
+    const STATUS_DOWNLOAD_DONE = 2;
     //const STATUS_IN_PROGRESS_FETCH = 3;
 
     /**

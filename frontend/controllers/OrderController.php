@@ -215,7 +215,7 @@ class OrderController extends \yii\web\Controller
               'order_log.status',
               'sum(case when ebay_order.status = 0 then 1 else 0 end) AS "Not Shipped"',
               'sum(case when ebay_order.label = 0 then 1 else 0 end) AS "Not Label"',
-              'sum(case when ebay_order.status = -1 then 1 else 0 end) AS "Not Paid"',
+              'sum(case when ebay_order.status = -1 AND ebay_order.paid_time IS NULL then 1 else 0 end) AS "Not Paid"',
             ])
             ->from('ebay_account')
             ->leftJoin('order_log','ebay_account.id = order_log.ebay_id')
@@ -400,7 +400,67 @@ class OrderController extends \yii\web\Controller
           return false;
         }
     }
+    public function actionDownload()
+    {
+      if (Yii::$app->request->isAjax) {
+        Yii::$app->response->format = Response::FORMAT_JSON;
+        $post = Yii::$app->request->post();
+        $ebayOrderApi = new EbayOrder($post['ebayID']);
+        if($orderLog=$this->findModel($post['ebayID'])){//not first time download
+          if($orderLog->status===OrderLog::STATUS_DOWNLOAD_DONE){//上次成功完成了下载订单，这次的订单起始时间就是上次的截止时间
+            $orderLog->create_from = $orderLog->create_to;
+            $orderLog->create_to = $ebayOrderApi->ebayOfficialTime()->format('Y-m-d H:i:s');//can not save, must format to string to save
+          }
+        }else{//first time download orders for this ebay acc id
+          $ebayTimeNow = $ebayOrder->ebayOfficialTime();
+          $createdFrom = $ebayTimeNow->sub(new \DateInterval('P2D'));//2 days before ebay time now
+          $orderLog = new OrderLog();
+          $orderLog->ebay_id = $post['ebayID'];
+          //$orderLog->status = OrderLog::STATUS_DOWNLOAD_INIT;
+          $orderLog->create_from = $createdFrom->format('Y-m-d H:i:s');
+          $orderLog->create_to = $ebayTimeNow->format('Y-m-d H:i:s');
+        }
+        $result = $ebayOrderApi->getOrdersByTime(new \DateTime($orderLog->create_from), new \DateTime($orderLog->create_to),$post['pageNum']);
+        if(isset($result['Error'])){
+          return $result;
+        }else{
+          if(!$result['moreOrders']){//no more orders
+            $orderLog->status = OrderLog::STATUS_DOWNLOAD_DONE;
+            if($orderLog->save()){
 
+            }else{
+              $result['Error'][]='Order Log failed to save';
+              foreach ($orderLog->errors as $errorArray) {
+                foreach ($errorArray as $error) {
+                  $result['Error'][] = $error;
+                }
+              }
+            }
+          }else{//more pages to download
+            
+          }
+        }
+
+      }else{
+        return false;
+      }
+    }
+    /**
+     * 去ebay更新下过单却没有付款的订单，这些订单已经存在数据库中，但状态是-1，意思是没有付款
+     */
+    public function actionUpdateNotPaid()
+    {
+      if (Yii::$app->request->isAjax) {
+        Yii::$app->response->format = Response::FORMAT_JSON;
+        $post = Yii::$app->request->post();
+        $notPaidOrders = EOrder::find()->select(['ebay_order_id'])->where(['status'=>EOrder::STATUS_NOT_PAID,'paid_time'=>null,'ebay_id'=>$post['ebayID']])->asArray()->all();
+
+        $ebayOrderApi = new EbayOrder($post['ebayID']);
+        $result = $ebayOrderApi->getOrdersByID($notPaidOrders);
+        return $result;
+      }
+
+    }
     public function actionPreFetch()
     {
       if(Yii::$app->request->isAjax){

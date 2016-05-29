@@ -35,6 +35,9 @@ use common\models\User;
  */
 class EOrder extends \frontend\models\base\MyActiveRecord
 {
+    const STATUS_NOT_PAID = -1;
+    const STATUS_SHIPPED = 1;
+    const STATUS_NOT_SHIPPED = 0;
     /**
      * @inheritdoc
      */

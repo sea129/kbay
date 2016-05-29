@@ -10,14 +10,46 @@ use yii\web\NotFoundHttpException;
 
 class EbayOrder extends EbayApi
 {
-  private function fetchPaidOrderReqInit(){
+  private function getOrderReqInit(){
     $request = new Types\GetOrdersRequestType();
     $request->RequesterCredentials = new Types\CustomSecurityHeaderType();
 		$request->RequesterCredentials->eBayAuthToken = $this->token;
     return $request;
   }
 
+  private function commonGetOrdersRequest($createFrom,$createTo){
+    $appSetting = \common\models\setting\AppSetting::findOne('fetch_order_entries_per_page');
+    $request = $this->getOrderReqInit();
+    $request->Pagination = new Types\PaginationType();
+    $request->Pagination->EntriesPerPage = $appSetting->number_value;
+    $request->CreateTimeFrom = $createFrom;
+    $request->CreateTimeTo =  $createTo;
+    $request->OrderStatus = 'Completed';
+    $request->OrderRole = 'Seller';
+    $request->IncludeFinalValueFee = true;
+    return $request;
+  }
 
+  public function getOrdersByTime($createFrom, $createTo, $pageNum){
+    $request = $this->commonGetOrdersRequest($createFrom,$createTo);
+    $request->Pagination->PageNumber = (int)$pageNum;
+    $service = $this->tradingServiceInit();
+    $response = $service->getOrders($request);
+    if($response->Ack !== 'Failure'){
+      $result = $this->getResponseError($response);
+      if(isset($result['Error'])){
+        return $result;
+      }else{
+        $result['orders'] = $response->OrderArray->Order;
+        $result['moreOrders'] = $response->HasMoreOrders;
+        return $result;
+      }
+    }else{
+      return ['Error'=>['Api Call ack Failure']];
+    }
+  }
+
+  
   public function ebayOfficialTime(){
     return $this->getOfficialTime();
   }
@@ -75,6 +107,8 @@ class EbayOrder extends EbayApi
 
     return $request;
   }
+
+
 
 }
 ?>

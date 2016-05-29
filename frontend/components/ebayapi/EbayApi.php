@@ -134,8 +134,49 @@ class EbayApi
 					//$result[($error->SeverityCode === Enums\SeverityCodeType::C_ERROR ? 'Error' : 'Warning')][]=['ShortMessage'=>$error->ShortMessage,'LongMessage'=>$error->LongMessage,];
 					$result['Error'][]=$error->ShortMessage;
 				}
-
 		}
+		// else{
+		// 	$result['Error'][]='error 11';
+		// 	$result['Error'][]='error 11';
+		// 	$result['Error'][]='error 11';
+		// 	$result['Error'][]='error 11';
+		// 	$result['Error'][]='error 11';
+		// 	$result['Error'][]='error 11';
+		// 	$result['Error'][]='error 11';
+		// 	$result['Error'][]='error 11';
+		// 	$result['Error'][]='error 11';
+		// 	$result['Error'][]='error 11';
+		// 	$result['Error'][]='error 11';
+		// 	$result['Error'][]='error 11';
+		// 	$result['Error'][]='error 11';
+		// 	$result['Error'][]='error 11';
+		// 	$result['Error'][]='error 11';
+		// 	$result['Error'][]='error 11';
+		// 	$result['Error'][]='error 11';
+		// 	$result['Error'][]='error 11';
+		// 	$result['Error'][]='error 11';
+		// 	$result['Error'][]='error 11';
+		// 	$result['Error'][]='error 11';
+		// 	$result['Error'][]='error 11';
+		// 	$result['Error'][]='error 11';
+		// 	$result['Error'][]='error 11';
+		// 	$result['Error'][]='error 11';
+		// 	$result['Error'][]='error 11';
+		// 	$result['Error'][]='error 11';
+		// 	$result['Error'][]='error 11';
+		// 	$result['Error'][]='error 11';
+		// 	$result['Error'][]='error 11';
+		// 	$result['Error'][]='error 11';
+		// 	$result['Error'][]='error 11';
+		// 	$result['Error'][]='error 11';
+		// 	$result['Error'][]='error 11';
+		// 	$result['Error'][]='error 11';
+		// 	$result['Error'][]='error 11';
+		// 	$result['Error'][]='error 11';
+		// 	$result['Error'][]='error 11';
+		// 	$result['Error'][]='error 11';
+		// 	$result['Error'][]='error 11';
+		// }
 		return $result;
 	}
 }

@@ -42,6 +42,7 @@ class EbayOrder extends EbayApi
       }else{
         $result['orders'] = $response->OrderArray->Order;
         $result['moreOrders'] = $response->HasMoreOrders;
+        $result['orderCounts'] = $response->PaginationResult->TotalNumberOfEntries;
         return $result;
       }
     }else{
@@ -49,7 +50,7 @@ class EbayOrder extends EbayApi
     }
   }
 
-  
+
   public function ebayOfficialTime(){
     return $this->getOfficialTime();
   }

@@ -37,14 +37,17 @@ function downloadOrders(ebayID, pageNum)
       $('.download-order-container ul li').first().children('i').removeClass('fa-refresh fa-spin').addClass('fa-exclamation-triangle red');
       $('.download-order-container').ace_scroll({size:500});
     }else{
-      
+      $('.download-order-container ul li').last().children('i').removeClass('fa-refresh fa-spin').addClass('fa-check green');
+      if(result.moreOrders == true){
+        pageNum++;
+        downloadOrders(ebayID, pageNum);
+      }else{
+        $('.download-order-container ul li').first().children('i').removeClass('fa-refresh fa-spin').addClass('fa-check green');
+        getListObj().append("<li><i class='fa fa-check green fa-fw fa-li fa-lg'></i>"+result.orderCounts+"个订单下载成功</li>");
+        $('.download-order-container').ace_scroll({size:500});
+      }
     }
-    // if(result.moreOrders == true){
-    //   $('.download-order-container ul li').last().children('i').removeClass('fa-refresh fa-spin').addClass('fa-check green');
-    //   pageNum++;
-    //   downloadOrders(ebayID, pageNum);
-    // }
-    console.log(result);
+    //console.log(result);
   })
   .fail(function() {
     //console.log("error");

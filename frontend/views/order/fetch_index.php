@@ -132,8 +132,8 @@ OrderFetchAsset::register($this);
     ],
     'clientEvents' =>[
         //'show.bs.modal' =>"function(){progreeBarInit();}",
-        'shown.bs.modal' => "function(e){downloadOrdersInit(e)}",
-        'hidden.bs.modal' => "function(e){}",
+        'shown.bs.modal' => "function(e){downloadOrdersInit(e);}",
+        'hidden.bs.modal' => "function(e){location.reload();}",
     ],
   ]);
 

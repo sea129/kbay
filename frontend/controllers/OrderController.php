@@ -503,41 +503,44 @@ class OrderController extends \yii\web\Controller
             $orderLog->create_to = $ebayOrderApi->ebayOfficialTime()->format('Y-m-d H:i:s');//can not save, must format to string to save
           }
         }else{//first time download orders for this ebay acc id
-          $ebayTimeNow = $ebayOrder->ebayOfficialTime();
-          $createdFrom = $ebayTimeNow->sub(new \DateInterval('P2D'));//2 days before ebay time now
+          $ebayTimeNow = $ebayOrderApi->ebayOfficialTime();
+          $createdFrom = clone $ebayTimeNow;
+          //$createdFrom = $ebayTimeNow->sub(new \DateInterval('P2D'));//2 days before ebay time now
           $orderLog = new OrderLog();
           $orderLog->order_qty = 0;
           $orderLog->ebay_id = $post['ebayID'];
           //$orderLog->status = OrderLog::STATUS_DOWNLOAD_INIT;
-          $orderLog->create_from = $createdFrom->format('Y-m-d H:i:s');
+          $orderLog->create_from = $createdFrom->sub(new \DateInterval('P2D'))->format('Y-m-d H:i:s');
           $orderLog->create_to = $ebayTimeNow->format('Y-m-d H:i:s');
         }
         //api call to download orders
+        //$result[orders][moreOrders][orderCounts]
         $result = $ebayOrderApi->getOrdersByTime(new \DateTime($orderLog->create_from), new \DateTime($orderLog->create_to),$post['pageNum']);
         if(isset($result['Error'])){
           return $result;
         }
         //save orders info to database
-        $result['Error']=$this->saveOrders($result['orders'],$post['ebayID']);
-        if(isset($result['Error'])){
+        if($result['Error']=$this->saveOrders($result['orders'],$post['ebayID'])){
           return $result;
         }
+
         if(!$result['moreOrders']){//no more orders
           $orderLog->status = OrderLog::STATUS_DOWNLOAD_DONE;
           $orderLog->order_qty = $result['orderCounts'];
-          if($orderLog->save()){
-
-          }else{
-            $result['Error'][]='Order Log failed to save';
-            foreach ($orderLog->errors as $errorArray) {
-              foreach ($errorArray as $error) {
-                $result['Error'][] = $error;
-              }
-            }
-          }
         }else{//more pages to download
           $orderLog->status = OrderLog::STATUS_DOWNLOAD_INIT;
-          $orderLog->order_qty =
+          $orderLog->order_qty = 0;
+        }
+        $orderLog->complete_at = date('Y-m-d H:i:s',time());
+        if($orderLog->save()){
+          return $result;
+        }else{
+          $result['Error'][]='Order Log failed to save';
+          foreach ($orderLog->errors as $errorArray) {
+            foreach ($errorArray as $error) {
+              $result['Error'][] = $error;
+            }
+          }
         }
 
 

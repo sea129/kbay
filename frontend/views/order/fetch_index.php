@@ -65,7 +65,7 @@ OrderFetchAsset::register($this);
           'attribute'=>'status',
           'value'=>function($model, $key, $index, $column){
             if($model['status']){
-              return $model['status']==1?'Pre Fetched':'Fetched';
+              return $model['status']==1?'Init':'Completed';
             }else{
               return null;
             }
@@ -86,9 +86,9 @@ OrderFetchAsset::register($this);
                   'type'=>'button',
                   'class'=>'btn btn-xs btn-warning btn-update-not-paid',
                   'data-ebay-id'=>$model['ebay_id'],
-                  'data-total-pages'=>$model['Not Paid']/$appSetting->number_value,
+                  //'data-total-pages'=>$model['Not Paid']/$appSetting->number_value,
                   'data-toggle'=>'modal',
-                  'data-target'=>'#update-modal']);
+                  'data-target'=>'#update-not-paid-orders-modal']);
             },
           ],
         ],
@@ -138,7 +138,7 @@ OrderFetchAsset::register($this);
   ]);
 
  ?>
- <div class="download-order-container" style="max-height:500px;min-height:500px;">
+ <div class="download-orders-container" style="max-height:500px;min-height:500px;">
   <ul class="list-unstyled spaced fa-ul">
 		<li>
 			<!-- <i class="ace-icon fa fa-check bigger-110 green"></i> -->
@@ -154,73 +154,11 @@ OrderFetchAsset::register($this);
   </p>
  </div>
  <?php Modal::end(); ?>
-<?php
-    Modal::begin([
-        'header' => 'Fetching Orders',
-        'options' =>['id'=>'fetch-modal'],
-        'size' => 'modal-lg',
-        'clientOptions' => [
-            'backdrop' => 'static',
-            'keyboard' => false,
-        ],
-        'clientEvents' =>[
-            //'show.bs.modal' =>"function(){progreeBarInit();}",
-            'shown.bs.modal' => "function(e){preFetchModal(e);}",
-            'hidden.bs.modal' => "function(e){closeSyncModal(e);}",
-        ],
-    ]); ?>
-    <div class="notice-board" style='display:none;'>
-      <div class="alert alert-block">
-        <button type="button" class="close" data-dismiss="alert">
-          <i class="ace-icon fa fa-times"></i>
-        </button>
-        <p class='message'>
 
-        </p>
-      </div>
-    </div>
-    <div class="infobox-container">
-      <div class="infobox infobox-grey infobox-small infobox-dark">
-        <div class="infobox-icon">
-          <i class="ace-icon fa fa-download"></i>
-        </div>
-
-        <div class="infobox-data">
-          <div class="infobox-content"><?php echo Yii::t('app/order', 'No. To Fetch', []); ?></div>
-          <div class="infobox-content">
-            <span id="no-orders"></span>
-            <span class="infobox-data-number" id="pre-fetch-loading"><?php echo Yii::t('app/order', 'Connecting...', []); ?><i class="ace-icon fa fa-spinner fa-spin orange bigger-125"></i></span>
-          </div>
-        </div>
-      </div>
-
-      <button class="btn btn-warning btn-xlg" id="btn-main-fetch" style='display:none;'><?php echo Yii::t('app/order', 'Fetch Now', []); ?></button>
-    </div>
-
-    <div class="progress progress-striped" id='fetch-progress-bar' style='display:none;'>
-      <div class="progress-bar progress-bar-pink active" style="width: 0%" role="progressbar" aria-valuenow="3" aria-valuemin="0" aria-valuemax="100">0%</div>
-    </div>
-    <div class="" style='display:none;' id="saving-error">
-      <div class="alert alert-block alert-success">
-        <p class="">
-          Completed!
-        </p>
-      </div>
-      <div id='error-scroll' style="max-height: 125px;">
-        <ul class="list-unstyled spaced" >
-        </ul>
-      </div>
-
-    </div>
-    <?php
-
-    ?>
-   <?php Modal::end();
- ?>
 <?php
 Modal::begin([
     'header' => 'Updating Not Paid Orders',
-    'options' =>['id'=>'update-modal'],
+    'options' =>['id'=>'update-not-paid-orders-modal'],
     'size' => 'modal-lg',
     'clientOptions' => [
         'backdrop' => 'static',
@@ -228,43 +166,23 @@ Modal::begin([
     ],
     'clientEvents' =>[
         //'show.bs.modal' =>"function(){progreeBarInit();}",
-        'shown.bs.modal' => "function(e){updateNotPaid(e);}",
+        'shown.bs.modal' => "function(e){updateNotPaidOrdersInit(e);}",
         'hidden.bs.modal' => "function(e){location.reload();}",
     ],
 ]); ?>
-<div class="notice-board" style='display:none;'>
-  <div class="alert alert-block">
-    <button type="button" class="close" data-dismiss="alert">
-      <i class="ace-icon fa fa-times"></i>
-    </button>
-    <p class='message'>
+<div class="update-not-paid-order-container" style="max-height:500px;min-height:500px;">
+ <ul class="list-unstyled spaced fa-ul">
+   <li>
+     <!-- <i class="ace-icon fa fa-check bigger-110 green"></i> -->
+     <i class="fa fa-refresh fa-spin fa-fw fa-li fa-lg"></i>
+     更新订单中...
+   </li>
 
-    </p>
-  </div>
+
+
+ </ul>
+ <p class="spinner-container">
+
+ </p>
 </div>
-<div class="">
-
-  <p style='text-align:center;'>
-
-    <i class="ace-icon fa fa-spinner fa-spin orange bigger-275" style=''></i>
-  </p>
-
-</div>
-
-<div class="" style='display:none;' id="saving-error">
-  <div class="alert alert-block alert-success">
-    <p class="">
-      Completed!
-    </p>
-  </div>
-  <div id='error-scroll' style="max-height: 125px;">
-    <ul class="list-unstyled spaced" >
-    </ul>
-  </div>
-
-</div>
-<?php
-
-?>
-<?php Modal::end();
- ?>
+<?php Modal::end(); ?>

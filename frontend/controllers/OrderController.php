@@ -11,6 +11,7 @@ use frontend\models\ebayaccounts\EbayAccount;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 use yii\filters\AccessControl;
+use yii\helpers\ArrayHelper;
 use frontend\models\orders\EOrder;
 use frontend\models\orders\EOrderSearch;
 use frontend\models\orders\EbayTransaction;
@@ -18,6 +19,7 @@ use frontend\components\ebayapi\EbayListing;
 use kartik\mpdf\Pdf;
 use frontend\models\UserSetting;
 use frontend\components\JHelper;
+
 class OrderController extends \yii\web\Controller
 {
     public function behaviors()
@@ -232,28 +234,7 @@ class OrderController extends \yii\web\Controller
         'model' => $model,
       ]);
     }
-    public function actionTime()
-    {
-      if(Yii::$app->request->isAjax){
-        Yii::$app->response->format = Response::FORMAT_JSON;
-        $post=Yii::$app->request->post();
-        $ebayOrder = new EbayOrder($post['ebayID']);
-        $ebayTime = $ebayOrder->ebayOfficialTime();
-        return [date('Y-m-d H:i:s',strtotime($ebayTime->format('Y-m-d H:i:s'))),date('Y-m-d H:i:s',time()),date('Y-m-d H:i:s',$ebayTime->getTimestamp())];
-      }
-    }
 
-    public function actionSaveLog(){
-      if(Yii::$app->request->isAjax){
-        Yii::$app->response->format = Response::FORMAT_JSON;
-        $post=Yii::$app->request->post();
-        $orderLog=$this->findModel($post['ebayID']);
-        $orderLog->status = OrderLog::STATUS_DONE_FETCH;
-        if($orderLog->save()){
-          return true;
-        }
-      }
-    }
     public function actionTestOrder(){
       $createFrom=new \DateTime('2016-05-18');
       $createTo=new \DateTime('2016-05-26');
@@ -557,72 +538,103 @@ class OrderController extends \yii\web\Controller
         Yii::$app->response->format = Response::FORMAT_JSON;
         $post = Yii::$app->request->post();
         $notPaidOrders = EOrder::find()->select(['ebay_order_id'])->where(['status'=>EOrder::STATUS_NOT_PAID,'paid_time'=>null,'ebay_id'=>$post['ebayID']])->asArray()->all();
-
+        $notPaidOrderIDArr = ArrayHelper::getColumn($notPaidOrders,'ebay_order_id');
         $ebayOrderApi = new EbayOrder($post['ebayID']);
-        $result = $ebayOrderApi->getOrdersByID($notPaidOrders);
+        $result = $ebayOrderApi->getOrdersByID($notPaidOrderIDArr,$post['pageNum']);
         return $result;
-      }
-
-    }
-    public function actionPreFetch()
-    {
-      if(Yii::$app->request->isAjax){
-        Yii::$app->response->format = Response::FORMAT_JSON;
-        $post=Yii::$app->request->post();
-        $result = [];
-        $ebayOrder = new EbayOrder($post['ebayID']);
-
-        $ebayTime = $ebayOrder->ebayOfficialTime();
-        $orderLog=$this->findModel($post['ebayID']);
-        //return $orderLog;
-        if(isset($orderLog)){
-
-          if($orderLog->status===OrderLog::STATUS_PRE_FETCH){
-            $createFrom=new \DateTime($orderLog->create_from);
-          }else{
-            $createFrom=new \DateTime($orderLog->create_to);
-          }
-          $preOrderInfo=$ebayOrder->getPreFetchInfo($createFrom,$ebayTime);//this createTo will be the new createFrom time
-        }else{//first fetch start from 1 day before now
-          $orderLog = new OrderLog();
-          $orderLog->ebay_id = $post['ebayID'];
-          $createFrom = clone $ebayTime;
-          $preOrderInfo=$ebayOrder->getPreFetchInfo($createFrom->sub(new \DateInterval('P2D')),$ebayTime);
-          //$result['preOrder']=$ebayTime->sub(new \DateInterval('P1D'))->format('Y-m-d H:i:s').'++'.$createTo->format('Y-m-d H:i:s');
-        }
-        if(isset($preOrderInfo['Error'])){
-          $result['status']='error';
-          $result['message']='Follow errors:'."<br>";
-          foreach ($preOrderInfo['Error'] as $error) {
-            $result['message'].=$error."<br>";
-          }
-        }else{
-          $result['status']='success';
-          $result['message']='Order Pre Fetch Success!';
-
-          $orderLog->create_from =$createFrom->format('Y-m-d H:i:s');
-          $orderLog->status = OrderLog::STATUS_PRE_FETCH;
-          $orderLog->order_qty = $preOrderInfo['preOrderData'];
-          $orderLog->create_to =$ebayTime->format('Y-m-d H:i:s');
-          $orderLog->complete_at =date('Y-m-d H:i:s',time());
-          //$orderLog->create_to =$ebayTime;
-          if($orderLog->save()){
-            $result['message'] .= "<br>".'Order Log Saved!';
-            $result['fetchQtyCount'] = $preOrderInfo['preOrderData'];
-            $result['totalPages'] = $preOrderInfo['totalPages'];
-          }else{
-            $result['status']='error';
-            $result['message'].="<br>"."Order Log Failed to Save";
-            $result['savingError'][]=$orderLog->errors;
-          }
-        }
-      return $result;
       }else{
-          //echo Json::encode("NOT AJAX!Denied");
-          return false;
-      }
-    }
+        $notPaidOrders = EOrder::find()->select(['ebay_order_id'])->where(['status'=>EOrder::STATUS_NOT_PAID,'paid_time'=>null,'ebay_id'=>3])->asArray()->all();
+        $notPaidOrderIDArr = ArrayHelper::getColumn($notPaidOrders,'ebay_order_id');
+        $ebayOrderApi = new EbayOrder(3);
+        $result = $ebayOrderApi->getOrdersByID($notPaidOrderIDArr,1);
+        echo "<pre>";
+        echo print_r($result);
+        echo "</pre>";
 
+      }
+
+
+    }
+    // public function actionPreFetch()
+    // {
+    //   if(Yii::$app->request->isAjax){
+    //     Yii::$app->response->format = Response::FORMAT_JSON;
+    //     $post=Yii::$app->request->post();
+    //     $result = [];
+    //     $ebayOrder = new EbayOrder($post['ebayID']);
+    //
+    //     $ebayTime = $ebayOrder->ebayOfficialTime();
+    //     $orderLog=$this->findModel($post['ebayID']);
+    //     //return $orderLog;
+    //     if(isset($orderLog)){
+    //
+    //       if($orderLog->status===OrderLog::STATUS_PRE_FETCH){
+    //         $createFrom=new \DateTime($orderLog->create_from);
+    //       }else{
+    //         $createFrom=new \DateTime($orderLog->create_to);
+    //       }
+    //       $preOrderInfo=$ebayOrder->getPreFetchInfo($createFrom,$ebayTime);//this createTo will be the new createFrom time
+    //     }else{//first fetch start from 1 day before now
+    //       $orderLog = new OrderLog();
+    //       $orderLog->ebay_id = $post['ebayID'];
+    //       $createFrom = clone $ebayTime;
+    //       $preOrderInfo=$ebayOrder->getPreFetchInfo($createFrom->sub(new \DateInterval('P2D')),$ebayTime);
+    //       //$result['preOrder']=$ebayTime->sub(new \DateInterval('P1D'))->format('Y-m-d H:i:s').'++'.$createTo->format('Y-m-d H:i:s');
+    //     }
+    //     if(isset($preOrderInfo['Error'])){
+    //       $result['status']='error';
+    //       $result['message']='Follow errors:'."<br>";
+    //       foreach ($preOrderInfo['Error'] as $error) {
+    //         $result['message'].=$error."<br>";
+    //       }
+    //     }else{
+    //       $result['status']='success';
+    //       $result['message']='Order Pre Fetch Success!';
+    //
+    //       $orderLog->create_from =$createFrom->format('Y-m-d H:i:s');
+    //       $orderLog->status = OrderLog::STATUS_PRE_FETCH;
+    //       $orderLog->order_qty = $preOrderInfo['preOrderData'];
+    //       $orderLog->create_to =$ebayTime->format('Y-m-d H:i:s');
+    //       $orderLog->complete_at =date('Y-m-d H:i:s',time());
+    //       //$orderLog->create_to =$ebayTime;
+    //       if($orderLog->save()){
+    //         $result['message'] .= "<br>".'Order Log Saved!';
+    //         $result['fetchQtyCount'] = $preOrderInfo['preOrderData'];
+    //         $result['totalPages'] = $preOrderInfo['totalPages'];
+    //       }else{
+    //         $result['status']='error';
+    //         $result['message'].="<br>"."Order Log Failed to Save";
+    //         $result['savingError'][]=$orderLog->errors;
+    //       }
+    //     }
+    //   return $result;
+    //   }else{
+    //       //echo Json::encode("NOT AJAX!Denied");
+    //       return false;
+    //   }
+    // }
+    // public function actionTime()
+    // {
+    //   if(Yii::$app->request->isAjax){
+    //     Yii::$app->response->format = Response::FORMAT_JSON;
+    //     $post=Yii::$app->request->post();
+    //     $ebayOrder = new EbayOrder($post['ebayID']);
+    //     $ebayTime = $ebayOrder->ebayOfficialTime();
+    //     return [date('Y-m-d H:i:s',strtotime($ebayTime->format('Y-m-d H:i:s'))),date('Y-m-d H:i:s',time()),date('Y-m-d H:i:s',$ebayTime->getTimestamp())];
+    //   }
+    // }
+    //
+    // public function actionSaveLog(){
+    //   if(Yii::$app->request->isAjax){
+    //     Yii::$app->response->format = Response::FORMAT_JSON;
+    //     $post=Yii::$app->request->post();
+    //     $orderLog=$this->findModel($post['ebayID']);
+    //     $orderLog->status = OrderLog::STATUS_DONE_FETCH;
+    //     if($orderLog->save()){
+    //       return true;
+    //     }
+    //   }
+    // }
     public function actionItemPic(){
       if(Yii::$app->request->isAjax){
         Yii::$app->response->format = Response::FORMAT_JSON;

@@ -50,6 +50,34 @@ class EbayOrder extends EbayApi
     }
   }
 
+  public function getOrdersByID($orderIDArr,$pageNum){
+    $request = $this->getOrderReqInit();
+    $appSetting = \common\models\setting\AppSetting::findOne('fetch_order_entries_per_page');
+    $request->Pagination = new Types\PaginationType();
+    $request->Pagination->EntriesPerPage = $appSetting->number_value;
+    $request->IncludeFinalValueFee = true;
+    $request->Pagination->PageNumber = (int)$pageNum;
+    //return $request->OrderIDArray;
+
+    $request->OrderIDArray = new Types\OrderIDArrayType();
+    $request->OrderIDArray->OrderID = $orderIDArr;
+    $service = $this->tradingServiceInit();
+    $response = $service->getOrders($request);
+    if($response->Ack !== 'Failure'){
+      $result = $this->getResponseError($response);
+      if(isset($result['Error'])){
+        return $result;
+      }else{
+        $result['orders'] = $response->OrderArray->Order;
+        $result['moreOrders'] = $response->HasMoreOrders;
+        $result['orderCounts'] = $response->PaginationResult->TotalNumberOfEntries;
+        return $result;
+      }
+    }else{
+      $result = $this->getResponseError($response);
+      return $result;
+    }
+  }
 
   public function ebayOfficialTime(){
     return $this->getOfficialTime();

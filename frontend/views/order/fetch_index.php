@@ -11,13 +11,15 @@ OrderFetchAsset::register($this);
 ?>
 <?php
   echo Html::beginForm(
-    'download-label',
+    //'download-label',
+    'download-labels',
     'post',
     ['id'=>'label-form','target'=>'_blank']
   );
 ?>
 <div class="action-buttons">
   <button type="submit" name="label-button" id='batch-label' class='btn btn-s btn-danger' download target="_blank">Batch Labels</button>
+  <button type="button" name="batch-download-orders-button" id='bt-batch-download-orders' class='btn btn-s btn-danger'>Batch Download Orders</button>
 </div>
 <div class="order-fetch-log">
   <?= GridView::widget([
@@ -29,6 +31,7 @@ OrderFetchAsset::register($this);
           'checkboxOptions' => function ($model, $key, $index, $column) {
               return ['value' => $model['ebay_id'],'class'=>'check-selection'];
           },
+          'name' => 'ebayIDArr',
         ],
         'seller_id',
         'order_qty',

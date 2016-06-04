@@ -83,9 +83,9 @@ class OrderController extends \yii\web\Controller
           }
         }
         $weight = round($weight/1000,2);
-        if($userSetting->fastway_indicator&&JHelper::isFastwayAvailable($order['recipient_postcode'])){
-          $packSign['fastway'] = true;
-        }
+
+        $packSign['fastway'] = ($userSetting->fastway_indicator&&JHelper::isFastwayAvailable($order['recipient_postcode']));
+
         if ($totalCost>=$userSetting->min_cost_tracking) {
           $packSign['eParcel'] = true;
         }
@@ -97,11 +97,38 @@ class OrderController extends \yii\web\Controller
         }
 
       }
+
+      return $label;
+    }
+
+    public function actionDownloadLabels()
+    {
+      $post = Yii::$app->request->post();
+      $searchModel = new EOrderSearch();
+      if (isset($post['ebayIDArr'])) {
+        $nonLabeledOrders = $searchModel->getNonLabeled($post['ebayIDArr']);
+      }else{
+        return Yii::t('app\order', 'Please select at least one ebay account', []);
+      }
+
+      if($nonLabeledOrders){
+        echo "<pre>";
+        echo print_r($nonLabeledOrders);
+        echo "</pre>";
+        return;
+        $shippingLabels = $this->getShippingLabel($nonLabeledOrders);
+      }else{
+        return 'No Orders To Be Labeled';
+      }
+
+      $filename = '';
+      return \Yii::$app->response->sendFile($filename);
+
     }
     public function actionDownloadLabel()
     {
       $post = Yii::$app->request->post();
-      $notLabelOrder = EOrder::find()->where(['label'=>0,'status'=>0])->all();
+      $notLabelOrder = EOrder::find()->where(['label'=>0,'status'=>0,])->all();
       //$subQuery = (new \yii\db\Query())->select(['t.buyer_id','COUNT(t.buyer_id) as buyer_count'])->from('ebay_order t')->groupBy(['t.buyer_id']);
       // $notLabelOrder = (new \yii\db\Query())
       //               ->select(['x.*','y.buyer_count'])
@@ -217,7 +244,8 @@ class OrderController extends \yii\web\Controller
               'order_log.status',
               'sum(case when ebay_order.status = 0 then 1 else 0 end) AS "Not Shipped"',
               'sum(case when ebay_order.label = 0 then 1 else 0 end) AS "Not Label"',
-              'sum(case when ebay_order.status = -1 AND ebay_order.paid_time IS NULL then 1 else 0 end) AS "Not Paid"',
+              //'sum(case when ebay_order.status = -1 OR ebay_order.paid_time IS NULL then 1 else 0 end) AS "Not Paid"',
+              'sum(case when ebay_order.status = -1 then 1 else 0 end) AS "Not Paid"',
             ])
             ->from('ebay_account')
             ->leftJoin('order_log','ebay_account.id = order_log.ebay_id')
@@ -265,122 +293,124 @@ class OrderController extends \yii\web\Controller
       return print_r($orders);
       echo "</pre>";
     }
-    public function actionMainFetch(){
-        if(Yii::$app->request->isAjax){
-          Yii::$app->response->format = Response::FORMAT_JSON;
-          $post=Yii::$app->request->post();
-          $result = [];
-          $ebayOrder = new EbayOrder($post['ebayID']);
-          $orderLog=$this->findModel($post['ebayID']);
-          $createFrom=new \DateTime($orderLog->create_from);
-          $createTo=new \DateTime($orderLog->create_to);
-          $orders = $ebayOrder->mainFetch($createFrom,$createTo,$post['pageNumber']);
-          //return var_dump($orders['hasMoreOrders']);
-          if(!isset($orders['Error'])){
-            $result['status']='success';
-            $result['message']='Connection Success';
-             //$result['test']=var_dump($orders['orders']);
-            //return $result;
-            foreach ($orders['orders'] as $order) {
-              $orderModal = EOrder::findOne(['ebay_order_id'=>$order->OrderID]);
-              if($orderModal===null){
-                $orderModal = new EOrder();
-              }
-              //$orderModal = new EOrder();
-              if(isset($order->ShippedTime)){
-                $orderModal->status = 1;
-                $orderModal->shipped_time = $order->ShippedTime->format('Y-m-d H:i:s');
-              }else{
-                $orderModal->status = 0;
-                $orderModal->shipped_time = NULL;
-              }
-              $orderModal->ebay_id = $post['ebayID'];
-              $orderModal->user_id = Yii::$app->user->id;
-              $orderModal->ebay_order_id = $order->OrderID;
-              $orderModal->ebay_seller_id = $order->SellerUserID;
-              $orderModal->sale_record_number = $order->ShippingDetails->SellingManagerSalesRecordNumber;
-              //$orderModal->sale_record_number = 'sf';
-              $orderModal->buyer_id = $order->BuyerUserID;
-              $orderModal->total = $order->Total->value;
-              $orderModal->created_time = $order->CreatedTime->format('Y-m-d H:i:s');
-              if(isset($order->PaidTime)){
-                $orderModal->paid_time = $order->PaidTime->format('Y-m-d H:i:s');
-              }else{//order not paid
-                $orderModal->paid_time = NULL;
-              }
 
-              $orderModal->recipient_name = $order->ShippingAddress->Name;
-              $orderModal->recipient_phone = $order->ShippingAddress->Phone;
-              $orderModal->recipient_address1 = $order->ShippingAddress->Street1;
-              $orderModal->recipient_address2 = $order->ShippingAddress->Street2;
-              $orderModal->recipient_city = $order->ShippingAddress->CityName;
-              $orderModal->recipient_state = $order->ShippingAddress->StateOrProvince;
-              $orderModal->recipient_postcode =$order->ShippingAddress->PostalCode;
-              $orderModal->checkout_message = $order->BuyerCheckoutMessage;
-              $orderModal->shipping_service = $order->ShippingServiceSelected->ShippingService;
-              if(!$orderModal->save()){
-                // foreach ($orderModal->errors as $attribute => $error ) {
-                //   $savingErrorMessage = "Buyer ID: ".$order->BuyerUserID."<br/>";
-                //   foreach ($error as $errorMessage) {
-                //     $savingErrorMessage .= $errorMessage;
-                //   }
-                //   $result['savingError'][] = $savingErrorMessage;
-                // }
-                //$result['savingError'][]=$orderModal->errors." Buyer ID: ".$orderModal->BuyerUserID;
-                $result['savingError'][]=[$order->OrderID=>$orderModal->errors];
-              }else{
-                foreach ($order->TransactionArray->Transaction as $transaction) {
-                  if(!$thisTransaction=EbayTransaction::findOne($transaction->TransactionID)){
-                    $thisTransaction = new EbayTransaction();
-                  }
-                  //$thisTransaction = new EbayTransaction();
-                  $thisTransaction->transaction_id = $transaction->TransactionID;
-                  $thisTransaction->ebay_order_id = $orderModal->id;
-                  $thisTransaction->buyer_email = $transaction->Buyer->Email;
-                  $thisTransaction->created_date = $transaction->CreatedDate->format('Y-m-d H:i:s');
-                  $thisTransaction->final_value_fee = $transaction->FinalValueFee->value;
-                  $thisTransaction->item_id = $transaction->Item->ItemID;
-                  $thisTransaction->item_sku = $transaction->Item->SKU;
-                  $thisTransaction->item_title = $transaction->Item->Title;
-                  $thisTransaction->qty_purchased = $transaction->QuantityPurchased;
+    // public function actionMainFetch(){
+    //     if(Yii::$app->request->isAjax){
+    //       Yii::$app->response->format = Response::FORMAT_JSON;
+    //       $post=Yii::$app->request->post();
+    //       $result = [];
+    //       $ebayOrder = new EbayOrder($post['ebayID']);
+    //       $orderLog=$this->findModel($post['ebayID']);
+    //       $createFrom=new \DateTime($orderLog->create_from);
+    //       $createTo=new \DateTime($orderLog->create_to);
+    //       $orders = $ebayOrder->mainFetch($createFrom,$createTo,$post['pageNumber']);
+    //       //return var_dump($orders['hasMoreOrders']);
+    //       if(!isset($orders['Error'])){
+    //         $result['status']='success';
+    //         $result['message']='Connection Success';
+    //          //$result['test']=var_dump($orders['orders']);
+    //         //return $result;
+    //         foreach ($orders['orders'] as $order) {
+    //           $orderModal = EOrder::findOne(['ebay_order_id'=>$order->OrderID]);
+    //           if($orderModal===null){
+    //             $orderModal = new EOrder();
+    //           }
+    //           //$orderModal = new EOrder();
+    //           if(isset($order->ShippedTime)){
+    //             $orderModal->status = 1;
+    //             $orderModal->shipped_time = $order->ShippedTime->format('Y-m-d H:i:s');
+    //           }else{
+    //             $orderModal->status = 0;
+    //             $orderModal->shipped_time = NULL;
+    //           }
+    //           $orderModal->ebay_id = $post['ebayID'];
+    //           $orderModal->user_id = Yii::$app->user->id;
+    //           $orderModal->ebay_order_id = $order->OrderID;
+    //           $orderModal->ebay_seller_id = $order->SellerUserID;
+    //           $orderModal->sale_record_number = $order->ShippingDetails->SellingManagerSalesRecordNumber;
+    //           //$orderModal->sale_record_number = 'sf';
+    //           $orderModal->buyer_id = $order->BuyerUserID;
+    //           $orderModal->total = $order->Total->value;
+    //           $orderModal->created_time = $order->CreatedTime->format('Y-m-d H:i:s');
+    //           if(isset($order->PaidTime)){
+    //             $orderModal->paid_time = $order->PaidTime->format('Y-m-d H:i:s');
+    //           }else{//order not paid
+    //             $orderModal->paid_time = NULL;
+    //           }
+    //
+    //           $orderModal->recipient_name = $order->ShippingAddress->Name;
+    //           $orderModal->recipient_phone = $order->ShippingAddress->Phone;
+    //           $orderModal->recipient_address1 = $order->ShippingAddress->Street1;
+    //           $orderModal->recipient_address2 = $order->ShippingAddress->Street2;
+    //           $orderModal->recipient_city = $order->ShippingAddress->CityName;
+    //           $orderModal->recipient_state = $order->ShippingAddress->StateOrProvince;
+    //           $orderModal->recipient_postcode =$order->ShippingAddress->PostalCode;
+    //           $orderModal->checkout_message = $order->BuyerCheckoutMessage;
+    //           $orderModal->shipping_service = $order->ShippingServiceSelected->ShippingService;
+    //           if(!$orderModal->save()){
+    //             // foreach ($orderModal->errors as $attribute => $error ) {
+    //             //   $savingErrorMessage = "Buyer ID: ".$order->BuyerUserID."<br/>";
+    //             //   foreach ($error as $errorMessage) {
+    //             //     $savingErrorMessage .= $errorMessage;
+    //             //   }
+    //             //   $result['savingError'][] = $savingErrorMessage;
+    //             // }
+    //             //$result['savingError'][]=$orderModal->errors." Buyer ID: ".$orderModal->BuyerUserID;
+    //             $result['savingError'][]=[$order->OrderID=>$orderModal->errors];
+    //           }else{
+    //             foreach ($order->TransactionArray->Transaction as $transaction) {
+    //               if(!$thisTransaction=EbayTransaction::findOne($transaction->TransactionID)){
+    //                 $thisTransaction = new EbayTransaction();
+    //               }
+    //               //$thisTransaction = new EbayTransaction();
+    //               $thisTransaction->transaction_id = $transaction->TransactionID;
+    //               $thisTransaction->ebay_order_id = $orderModal->id;
+    //               $thisTransaction->buyer_email = $transaction->Buyer->Email;
+    //               $thisTransaction->created_date = $transaction->CreatedDate->format('Y-m-d H:i:s');
+    //               $thisTransaction->final_value_fee = $transaction->FinalValueFee->value;
+    //               $thisTransaction->item_id = $transaction->Item->ItemID;
+    //               $thisTransaction->item_sku = $transaction->Item->SKU;
+    //               $thisTransaction->item_title = $transaction->Item->Title;
+    //               $thisTransaction->qty_purchased = $transaction->QuantityPurchased;
+    //
+    //               $thisTransaction->sale_record_number = $transaction->ShippingDetails->SellingManagerSalesRecordNumber;
+    //               if(isset($transaction->ShippingDetails->ShipmentTrackingDetails)){
+    //                 $thisTransaction->tracking_number = $transaction->ShippingDetails->ShipmentTrackingDetails['0']->ShipmentTrackingNumber;
+    //               }
+    //               if(isset($transaction->ShippingDetails->ShipmentTrackingDetails)){
+    //                 $thisTransaction->shipping_carrier = $transaction->ShippingDetails->ShipmentTrackingDetails['0']->ShippingCarrierUsed;
+    //               }
+    //
+    //
+    //               $thisTransaction->transaction_price = $transaction->TransactionPrice->value;
+    //               if(isset($transaction->Variation->VariationTitle)){
+    //                 $thisTransaction->variation = $transaction->Variation->VariationTitle;
+    //               }
+    //
+    //               if(!$thisTransaction->save()){
+    //                 //$result['savingError'][]=$thisTransaction->errors." Buyer ID: ".$thisOrder->BuyerUserID;
+    //                 $result['savingError'][]=$thisTransaction->errors;
+    //               }
+    //
+    //             }
+    //           }
+    //
+    //         }//end foreach
+    //
+    //       }else{
+    //         $result['status']='error';
+    //         $result['message']='Errors:'."<br>";
+    //         foreach ($orders['Error'] as $error) {
+    //           $result['message'].=$error."<br>";
+    //         }
+    //       }
+    //       return $result;
+    //     }else{
+    //       //echo Json::encode("NOT AJAX!Denied");
+    //       return false;
+    //     }
+    // }
 
-                  $thisTransaction->sale_record_number = $transaction->ShippingDetails->SellingManagerSalesRecordNumber;
-                  if(isset($transaction->ShippingDetails->ShipmentTrackingDetails)){
-                    $thisTransaction->tracking_number = $transaction->ShippingDetails->ShipmentTrackingDetails['0']->ShipmentTrackingNumber;
-                  }
-                  if(isset($transaction->ShippingDetails->ShipmentTrackingDetails)){
-                    $thisTransaction->shipping_carrier = $transaction->ShippingDetails->ShipmentTrackingDetails['0']->ShippingCarrierUsed;
-                  }
-
-
-                  $thisTransaction->transaction_price = $transaction->TransactionPrice->value;
-                  if(isset($transaction->Variation->VariationTitle)){
-                    $thisTransaction->variation = $transaction->Variation->VariationTitle;
-                  }
-
-                  if(!$thisTransaction->save()){
-                    //$result['savingError'][]=$thisTransaction->errors." Buyer ID: ".$thisOrder->BuyerUserID;
-                    $result['savingError'][]=$thisTransaction->errors;
-                  }
-
-                }
-              }
-
-            }//end foreach
-
-          }else{
-            $result['status']='error';
-            $result['message']='Errors:'."<br>";
-            foreach ($orders['Error'] as $error) {
-              $result['message'].=$error."<br>";
-            }
-          }
-          return $result;
-        }else{
-          //echo Json::encode("NOT AJAX!Denied");
-          return false;
-        }
-    }
 
     private function saveOrders($orders, $ebayID)
     {
@@ -514,7 +544,7 @@ class OrderController extends \yii\web\Controller
         }
         $orderLog->complete_at = date('Y-m-d H:i:s',time());
         if($orderLog->save()){
-          return $result;
+          return ['moreOrders'=>$result['moreOrders'],'orderCounts'=>$result['orderCounts']];
         }else{
           $result['Error'][]='Order Log failed to save';
           foreach ($orderLog->errors as $errorArray) {
@@ -538,19 +568,27 @@ class OrderController extends \yii\web\Controller
         Yii::$app->response->format = Response::FORMAT_JSON;
         $post = Yii::$app->request->post();
         $notPaidOrders = EOrder::find()->select(['ebay_order_id'])->where(['status'=>EOrder::STATUS_NOT_PAID,'paid_time'=>null,'ebay_id'=>$post['ebayID']])->asArray()->all();
+        //$notPaidOrders = EOrder::find()->select(['ebay_order_id'])->where(['status'=>EOrder::STATUS_NOT_PAID,'ebay_id'=>$post['ebayID']])->asArray()->all();
         $notPaidOrderIDArr = ArrayHelper::getColumn($notPaidOrders,'ebay_order_id');
         $ebayOrderApi = new EbayOrder($post['ebayID']);
         $result = $ebayOrderApi->getOrdersByID($notPaidOrderIDArr,$post['pageNum']);
-        return $result;
+        if(isset($result['Error'])){
+          return $result;
+        }
+        //update unpaid orders
+        if($result['Error']=$this->saveOrders($result['orders'],$post['ebayID'])){
+          return $result;
+        }
+        return ['moreOrders'=>$result['moreOrders']];
       }else{
-        $notPaidOrders = EOrder::find()->select(['ebay_order_id'])->where(['status'=>EOrder::STATUS_NOT_PAID,'paid_time'=>null,'ebay_id'=>3])->asArray()->all();
-        $notPaidOrderIDArr = ArrayHelper::getColumn($notPaidOrders,'ebay_order_id');
-        $ebayOrderApi = new EbayOrder(3);
-        $result = $ebayOrderApi->getOrdersByID($notPaidOrderIDArr,1);
-        echo "<pre>";
-        echo print_r($result);
-        echo "</pre>";
-
+        // $notPaidOrders = EOrder::find()->select(['ebay_order_id'])->where(['status'=>EOrder::STATUS_NOT_PAID,'paid_time'=>null,'ebay_id'=>3])->asArray()->all();
+        // $notPaidOrderIDArr = ArrayHelper::getColumn($notPaidOrders,'ebay_order_id');
+        // $ebayOrderApi = new EbayOrder(3);
+        // $result = $ebayOrderApi->getOrdersByID($notPaidOrderIDArr,1);
+        // echo "<pre>";
+        // echo print_r($result);
+        // echo "</pre>";
+        return false;
       }
 
 

@@ -144,7 +144,7 @@ scriptLoader('http://templateassets.atspace.cc/ozsuperdeal/assets/js/zoom.min.js
 				<?php echo $product->description; ?>
 			</div>
 			<div class="paragraph" id="event2">
-				<?php echo $product->mini_desc; ?>
+				<?php echo $product->specs; ?>
 			</div>
 			<div class="paragraph" id="event3">
 				<?php echo $ebayAcc->shipping_info; ?>

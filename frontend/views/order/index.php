@@ -145,6 +145,10 @@ $this->params['breadcrumbs'][] = $this->title;
               },
             ],
             [
+              'attribute'=>'label',
+              'label'=>Yii::t('app/order', 'Labels printed', []),
+            ],
+            [
               'attribute'=>'shipped_time',
               'label'=>Yii::t('app/order', 'Shipped Time', []),
               'filterType'=>GridView::FILTER_DATE_RANGE,

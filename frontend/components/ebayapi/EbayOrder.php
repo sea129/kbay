@@ -46,7 +46,9 @@ class EbayOrder extends EbayApi
         return $result;
       }
     }else{
-      return ['Error'=>['Api Call ack Failure']];
+      $result = $this->getResponseError($response);
+      $result['Error'][] = 'Api Call ack Failure';
+      return $result;
     }
   }
 
@@ -70,11 +72,12 @@ class EbayOrder extends EbayApi
       }else{
         $result['orders'] = $response->OrderArray->Order;
         $result['moreOrders'] = $response->HasMoreOrders;
-        $result['orderCounts'] = $response->PaginationResult->TotalNumberOfEntries;
+        //$result['orderCounts'] = $response->PaginationResult->TotalNumberOfEntries;
         return $result;
       }
     }else{
       $result = $this->getResponseError($response);
+      $result['Error'][] = 'Api Call ack Failure';
       return $result;
     }
   }

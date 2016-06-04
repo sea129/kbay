@@ -51,13 +51,31 @@ function downloadOrdersInit(e){
 
 function updateNotPaidOrders(ebayID, pageNum){
   getUpdateNotPaidListObj().append("<li><i class='fa fa-refresh fa-spin fa-fw fa-li fa-lg'></i>更新第"+pageNum+"页...</li>");
+
   $.ajax({
     url: 'update-not-paid',
     type: 'POST',
     data: {ebayID: ebayID, pageNum:pageNum}
   })
   .done(function(result) {
-    console.log(result);
+    if(result.Error){
+      getUpdateNotPaidListObj().children().last().children('i').removeClass('fa-refresh fa-spin').addClass('fa-exclamation-triangle red');
+      $.each(result.Error,function(index,value){
+        getUpdateNotPaidListObj().append("<li style='color:red'><i class='fa fa-times fa-fw fa-li fa-lg'></i>"+value+"</li>");
+      });
+      getUpdateNotPaidListObj().children().first().children('i').removeClass('fa-refresh fa-spin').addClass('fa-exclamation-triangle red');
+      $('.download-orders-container').ace_scroll({size:500});
+    }else{
+      getUpdateNotPaidListObj().children().last().children('i').removeClass('fa-refresh fa-spin').addClass('fa-check green');
+      if(result.moreOrders == true){
+        pageNum++;
+        updateNotPaidOrders(ebayID, pageNum);
+      }else{
+        getUpdateNotPaidListObj().children().first().children('i').removeClass('fa-refresh fa-spin').addClass('fa-check green');
+        getUpdateNotPaidListObj().append("<li><i class='fa fa-check green fa-fw fa-li fa-lg'></i>未付款订单更新成功</li>");
+        $('.download-orders-container').ace_scroll({size:500});
+      }
+    }
   })
   .fail(function() {
     console.log("error");

@@ -113,6 +113,29 @@ class EOrder extends \frontend\models\base\MyActiveRecord
         return $this->hasOne(User::className(), ['id' => 'user_id']);
     }
 
+    private $_buyerCount;
+
+    public function getBuyerCount()
+    {
+      return $this->_buyerCount;
+    }
+
+    // private $_buyerCount;
+    //
+    // public function setBuyerCount($count)
+    // {
+    //   $this->_buyerCount = (int) $count;
+    // }
+    // public function getBuyerCount()
+    // {
+    //   if ($this->isNewRecord) {
+    //         return null; // This avoid calling a query searching for null primary keys.
+    //   }
+    //   if ($this->_buyerCount === null){
+    //     $count = 1;
+    //     $this->setBuyerCount($count);
+    //   }
+    // }
     /**
      * @return \yii\db\ActiveQuery
      */
@@ -127,7 +150,7 @@ class EOrder extends \frontend\models\base\MyActiveRecord
      */
     public static function find()
     {
-        return new EbayOrderQuery(get_called_class());
+        return new EOrderQuery(get_called_class());
     }
 
     public function getNonLabelCount(){

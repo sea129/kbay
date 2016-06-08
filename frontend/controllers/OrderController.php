@@ -19,7 +19,8 @@ use frontend\components\ebayapi\EbayListing;
 use kartik\mpdf\Pdf;
 use frontend\models\UserSetting;
 use frontend\components\JHelper;
-
+use frontend\components\EparcelHelper;
+use yii\base\ErrorException;
 class OrderController extends \yii\web\Controller
 {
     public function behaviors()
@@ -56,49 +57,63 @@ class OrderController extends \yii\web\Controller
         ]);
     }
 
+
     /**
      * Loop orders and get shipping label
      */
     private function getShippingLabel($orders){
       $label = '';
+      //return count($orders);
       $userSetting = UserSetting::findOne(Yii::$app->user->id);
-      $packSign = [
-        'eParcel'=>false,
-        'fastway'=>false,
-        'buyerCount'=>1,
-        'checkoutMessage'=>false,
-      ];
-      foreach ($orders as $order) {
-        $transLabel = '';
-        $transactions = $order->getEbayTransactions()->all();
-        $totalCost = 0;
-        $weight = 0;
+      $orderIndex = 0;
 
-        foreach ($transactions as $transaction) {
+      $eParcelHelper = new EparcelHelper();
+
+      foreach ($orders as $key => $order) {
+        $packSign = [
+          'eParcel'=>false,
+          'fastway'=>false,
+          'express'=>false,
+          'buyerCount'=>1,
+          'checkoutMessage'=>false,
+          'weight'=>0,
+          'totalCost'=>0,
+        ];
+        $transLabel = '';
+
+        foreach ($order['ebayTransactions'] as $transaction) {
           if($product = $transaction->getProduct()->one()){
-            $weight += ($product['weight']*$transaction['qty_purchased']);
-            $totalCost += ($product['cost']*$transaction['qty_purchased']);
+            $packSign['weight'] += ($product['weight']*$transaction['qty_purchased']);
+            $packSign['totalCost'] += ($product['cost']*$transaction['qty_purchased']);
           }else{
             $transLabel .= "Error! Can't find the product ".$transaction['item_sku'];
           }
+          $transLabel .= $this->renderPartial('_translabel',['transaction'=>$transaction]);
         }
-        $weight = round($weight/1000,2);
+        $packSign['weight'] = round($packSign['weight']/1000,2);
 
         $packSign['fastway'] = ($userSetting->fastway_indicator&&JHelper::isFastwayAvailable($order['recipient_postcode']));
 
-        if ($totalCost>=$userSetting->min_cost_tracking) {
+        if ($packSign['totalCost']>=$userSetting->min_cost_tracking) {
           $packSign['eParcel'] = true;
         }
-        if($order['buyer_count']>1){
-          $packSign['buyerCount'] = $order['buyer_count'];
+        if($order['shipping_service'] == 'AU_ExpressDelivery' || $order['shipping_service'] =='AU_Express' || $order['shipping_service'] == 'AU_ExpressWithInsurance'){
+          $packSign['express'] = true;
+        }
+        if($order->buyerCount>1){
+          $packSign['buyerCount'] = $order->buyerCount;
         }
         if($order['checkout_message']!=NULL){
           $packSign['checkoutMessage'] = true;
         }
+        $label .=$this->renderPartial('label',['order'=>$order,'transLabel'=>$transLabel,'packSign'=>$packSign, 'orderIndex'=>$orderIndex]);
+        $orderIndex++;
+
+        $eParcelHelper->addExcelRow($order, $packSign['weight']);
 
       }
 
-      return $label;
+      return ['label'=>$label,'excelObj'=>$eParcelHelper];
     }
 
     public function actionDownloadLabels()
@@ -112,23 +127,68 @@ class OrderController extends \yii\web\Controller
       }
 
       if($nonLabeledOrders){
-        echo "<pre>";
-        echo print_r($nonLabeledOrders);
-        echo "</pre>";
-        return;
         $shippingLabels = $this->getShippingLabel($nonLabeledOrders);
+        //return $shippingLabels['label'];
       }else{
         return 'No Orders To Be Labeled';
       }
 
-      $filename = '';
-      return \Yii::$app->response->sendFile($filename);
+      //create a template dir, should delete files periodly
+      $tmpDir = Yii::$app->params['labelDirectory'].Yii::$app->user->id;
+      if (!file_exists($tmpDir) && !mkdir($tmpDir, 0755, true)) {
+          throw new \yii\web\HttpException(404, 'No label directories');
+      }
 
+      $labelFile = $tmpDir."/label.pdf";
+      $excelFile = $tmpDir.'/eparcel.xlsx';
+
+      $pdf = new Pdf([
+            // set to use core fonts only
+            'format'=>['105','148'],
+            'mode' => Pdf::MODE_UTF8,
+            'marginLeft' => '2',
+            'marginRight' => '2',
+            'marginTop' => '13',
+            'marginBottom' => '0',
+            'filename'=>$labelFile,
+            'options'=>[
+              'showImageErrors' => true,
+            ],
+            'destination'=>Pdf::DEST_FILE,
+            //'destination' => Pdf::DEST_BROWSER,
+            // your html content input
+            'content' => $shippingLabels['label'],
+          ]);
+      //return $pdf->render();
+      $objWriter = \PHPExcel_IOFactory::createWriter($shippingLabels['excelObj']->objPHPExcel, 'Excel2007');
+      try {
+        $pdf->render();
+        $objWriter->save($excelFile);
+      } catch (ErrorException $e) {
+        throw new \yii\web\HttpException(404, 'Can not create PDF OR Excel File');
+      }
+
+      $zip = new \ZipArchive();
+      $filename = $tmpDir.'/'."orders-".date('Y-m-d-H-i-s').".zip";
+
+      try {
+        $zip->open($filename, \ZipArchive::CREATE);
+        $zip->addFile($labelFile,'labels-'.date('Y-m-d-H-i-s').'.pdf');
+        $zip->addFile($excelFile,'eparcel-'.date('Y-m-d-H-i-s').'.xlsx');
+        $zip->close();
+      } catch (ErrorException $e) {
+        throw new \yii\web\HttpException(404, 'Can not create Zip File');
+      }
+
+      return \Yii::$app->response->sendFile($filename);
     }
     public function actionDownloadLabel()
     {
       $post = Yii::$app->request->post();
       $notLabelOrder = EOrder::find()->where(['label'=>0,'status'=>0,])->all();
+      // echo "<pre>";
+      // echo var_dump($notLabelOrder);
+      // echo "</pre>";
       //$subQuery = (new \yii\db\Query())->select(['t.buyer_id','COUNT(t.buyer_id) as buyer_count'])->from('ebay_order t')->groupBy(['t.buyer_id']);
       // $notLabelOrder = (new \yii\db\Query())
       //               ->select(['x.*','y.buyer_count'])

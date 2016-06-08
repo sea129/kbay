@@ -7,6 +7,7 @@ use yii\base\Model;
 use yii\data\ActiveDataProvider;
 use frontend\models\orders\EOrder;
 use yii\helpers\StringHelper;
+use frontend\models\orders\EbayTransaction;
 /**
  * EOrderSearch represents the model behind the search form about `frontend\models\orders\EOrder`.
  */
@@ -31,52 +32,28 @@ class EOrderSearch extends EOrder
         // bypass scenarios() implementation in the parent class
         return Model::scenarios();
     }
+
+
     public function getNonLabeled($ebayIDArr)
     {
-      // $subQuery = (new \yii\db\Query())
-      //             ->select(['t.buyer_id','COUNT(t.buyer_id) as buyer_count', 't.id'])
-      //             ->from('ebay_order t')
-      //             ->where(['t.label'=>0,'t.status'=>0,'t.user_id'=>Yii::$app->user->id, 't.ebay_id'=>$ebayIDArr])
-      //             ->andWhere(['is not', 't.paid_time', null])
-      //             //->innerJoin(['z'=>$k],'z.ebay_order_id=t.id')
-      //             ->groupBy(['t.buyer_id'])
-      //             //->all();
-      //             ;
-      //             //return $subQuery;
-      $subQuery = (new \yii\db\Query())
-                  ->select(['buyer_id','COUNT(buyer_id) as buyer_count'])
+      $buyerCountQuery = EOrder::find()
+      ->select(['buyer_id', 'COUNT(buyer_id) AS buyerCount'])
+      ->where(['label'=>0,'status'=>0,'user_id'=>Yii::$app->user->id, 'ebay_id'=>$ebayIDArr])
+      ->andWhere(['is not', 'paid_time', null])
+      ->groupBy(['buyer_id'])
+      //->all()
+      ;
+
+      $orderModal = EOrder::find()
+                  ->select(['*', 'buyerCount'])
                   ->from('ebay_order')
+                  ->joinWith('ebayTransactions')
+                  ->leftJoin(['z' => $buyerCountQuery],'ebay_order.buyer_id = z.buyer_id')
                   ->where(['label'=>0,'status'=>0,'user_id'=>Yii::$app->user->id, 'ebay_id'=>$ebayIDArr])
                   ->andWhere(['is not', 'paid_time', null])
-                  //->innerJoin(['z'=>$k],'z.ebay_order_id=t.id')
-                  ->groupBy(['buyer_id'])
-                  //->all();
-                  ;
-                  //return $subQuery;
-      $querySku = (new \yii\db\Query())
-                ->select(['ebay_order_id','item_sku'])
-                ->from('ebay_transaction')
-                //->leftJoin(['y'=>$subQuery], 'y.id=ebay_order_id')
-                //->all()
-                ;
-      //return $querySku;
-      $orderModal = (new \yii\db\Query())
-                    ->select(['x.*','y.item_sku','z.buyer_count'])
-                    ->from('ebay_order x')
-                    ->where(['label'=>0,'status'=>0,'user_id'=>Yii::$app->user->id, 'ebay_id'=>$ebayIDArr])
-                    ->andWhere(['is not', 'paid_time', null])
-                    ->leftJoin(['y' => $querySku],'x.id=y.ebay_order_id')
-                    ->leftJoin(['z' => $subQuery],'x.buyer_id=z.buyer_id')
-                    ->groupBy('x.id')
-                    ->orderBy('y.item_sku')
-                    ->all();
-      // $orderModal = (new \yii\db\Query())
-      //               ->select(['x.*','y.buyer_count','y.item_sku'])
-      //               ->from('ebay_order x')
-      //               ->where(['x.label'=>0,'x.status'=>0,'x.user_id'=>Yii::$app->user->id, 'x.ebay_id'=>$ebayIDArr])
-      //               ->andWhere(['is not', 'x.paid_time', null])
-      //               ->leftJoin(['y' => $subQuery],'y.buyer_id=x.buyer_id')
-      //               ->all();
+                  ->orderBy('ebay_transaction.item_sku')
+                  //->groupBy('buyer_id')
+                  ->all();
       return $orderModal;
     }
     /**

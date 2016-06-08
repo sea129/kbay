@@ -7,7 +7,7 @@ namespace frontend\models\orders;
  *
  * @see EOrder
  */
-class EbayOrderQuery extends \yii\db\ActiveQuery
+class EOrderQuery extends \yii\db\ActiveQuery
 {
     /*public function active()
     {

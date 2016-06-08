@@ -4,6 +4,7 @@ namespace frontend\models\ebayaccounts;
 
 use Yii;
 use frontend\models\listingtemplate\ListingTemplate;
+use frontend\models\orders\EOrder;
 /**
  * This is the model class for table "ebay_account".
  *
@@ -90,6 +91,22 @@ class EbayAccount extends \frontend\models\base\MyActiveRecord
     {
         return $this->hasOne(User::className(), ['id' => 'user_id']);
     }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getEbayOrders()
+    {
+        return $this->hasMany(EOrder::className(), ['ebay_id' => 'id']);
+    }
+
+    // /**
+    //  * @return \yii\db\ActiveQuery
+    //  */
+    // public function getListings()
+    // {
+    //     return $this->hasMany(Listing::className(), ['ebay_id' => 'id']);
+    // }
 
     /**
      * @return \yii\db\ActiveQuery

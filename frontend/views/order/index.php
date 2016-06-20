@@ -86,7 +86,12 @@ $this->params['breadcrumbs'][] = $this->title;
               //'attribute'=>'ebayTransactions',
               'label'=>'Buyer Email',
               'value'=>function($model, $key, $index, $column){
-                return $model->ebayTransactions[0]->buyer_email;
+                if(isset($model->ebayTransactions[0])){
+                  return $model->ebayTransactions[0]->buyer_email;
+                }else{
+                  return null;
+                }
+
               },
             ],
             //['class' => 'yii\grid\SerialColumn'],

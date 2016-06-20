@@ -32,7 +32,8 @@
         "kartik-v/yii2-widgets": "*",
         "phpoffice/phpexcel": "dev-develop",
         "yiisoft/yii2-imagine": "^2.0",
-        "ptcong/php-image-uploader": "6.0"
+        "ptcong/php-image-uploader": "6.0",
+        "bower-asset/react": "*"
     },
     "require-dev": {
         "yiisoft/yii2-codeception": "*",

@@ -18,7 +18,7 @@ OrderFetchAsset::register($this);
   );
 ?>
 <div class="action-buttons">
-  <button type="submit" name="label-button" id='batch-label' class='btn btn-s btn-danger' download target="_blank">Batch Labels</button>
+  <button type="submit" name="label-button" id='batch-label' class='btn btn-s btn-danger' download target="_blank">Batch Download Labels</button>
   <button type="button" name="batch-download-orders-button" id='bt-batch-download-orders' class='btn btn-s btn-danger'>Batch Download Orders</button>
 </div>
 <div class="order-fetch-log">
@@ -84,19 +84,21 @@ OrderFetchAsset::register($this);
           'buttons'=>[
             'update-not-paid'=>function($url, $model, $key){
               $appSetting = \common\models\setting\AppSetting::findOne('fetch_order_entries_per_page');
-              return Html::button('<span class="ace-icon fa fa-refresh"></span>'.$model['Not Paid'],
-                [
-                  'type'=>'button',
-                  'class'=>'btn btn-xs btn-warning btn-update-not-paid',
-                  'data-ebay-id'=>$model['ebay_id'],
-                  //'data-total-pages'=>$model['Not Paid']/$appSetting->number_value,
-                  'data-toggle'=>'modal',
-                  'data-target'=>'#update-not-paid-orders-modal']);
+              if($model['Not Paid']==0){
+                return $model['Not Paid'];
+              }else{
+                return Html::button('<span class="ace-icon fa fa-refresh"></span>'.$model['Not Paid'],
+                  [
+                    'type'=>'button',
+                    'class'=>'btn btn-xs btn-warning btn-update-not-paid',
+                    'data-ebay-id'=>$model['ebay_id'],
+                    //'data-total-pages'=>$model['Not Paid']/$appSetting->number_value,
+                    'data-toggle'=>'modal',
+                    'data-target'=>'#update-not-paid-orders-modal']);
+              }
+
             },
           ],
-        ],
-        [
-          'attribute'=>'Not Label',
         ],
         [
           'attribute'=>'Not Shipped',

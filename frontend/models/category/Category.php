@@ -37,6 +37,7 @@ class Category extends \frontend\models\base\MyActiveRecord
             [['user_id'], 'integer'],
             [['name'], 'string', 'max' => 64],
             [['code'], 'string', 'max' => 10],
+            [['name','code'],'trim'],
             ['code', 'match', 'pattern' => '/^[A-Z0-9]+$/','message' => Yii::t('app/category', 'capital letters and numbers only')],
             [['code', 'user_id'], 'unique', 'targetAttribute' => ['code', 'user_id'], 'message' => 'The Code has already been taken.'],
             [['name', 'user_id'], 'unique', 'targetAttribute' => ['name', 'user_id'], 'message' => 'The Name has already been taken.']

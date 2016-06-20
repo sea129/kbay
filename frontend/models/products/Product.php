@@ -85,6 +85,7 @@ class Product extends \frontend\models\base\MyActiveRecord
             ['qty_per_order','compare','compareValue' => 1, 'operator'=>'>','on'=>self::SCENARIO_BATCH],
             ['stock_qty','integer','on'=>self::SCENARIO_SINGLE],
             ['stock_qty','compare','compareValue' => null, 'operator'=>'==','on'=>self::SCENARIO_BATCH],
+            [['sku','name'],'trim'],
             //['main_image_file','image','extensions'=>'png, jpg, gif','maxSize'=>'2000000'],
         ];
     }

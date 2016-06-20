@@ -38,7 +38,7 @@ class EOrderSearch extends EOrder
     {
       $buyerCountQuery = EOrder::find()
       ->select(['buyer_id', 'COUNT(buyer_id) AS buyerCount'])
-      ->where(['label'=>0,'status'=>0,'user_id'=>Yii::$app->user->id, 'ebay_id'=>$ebayIDArr])
+      ->where(['status'=>parent::STATUS_NOT_SHIPPED,'user_id'=>Yii::$app->user->id, 'ebay_id'=>$ebayIDArr])
       ->andWhere(['is not', 'paid_time', null])
       ->groupBy(['buyer_id'])
       //->all()
@@ -49,7 +49,7 @@ class EOrderSearch extends EOrder
                   ->from('ebay_order')
                   ->joinWith('ebayTransactions')
                   ->leftJoin(['z' => $buyerCountQuery],'ebay_order.buyer_id = z.buyer_id')
-                  ->where(['label'=>0,'status'=>0,'user_id'=>Yii::$app->user->id, 'ebay_id'=>$ebayIDArr])
+                  ->where(['status'=>parent::STATUS_NOT_SHIPPED,'user_id'=>Yii::$app->user->id, 'ebay_id'=>$ebayIDArr])
                   ->andWhere(['is not', 'paid_time', null])
                   ->orderBy('ebay_transaction.item_sku')
                   //->groupBy('buyer_id')
@@ -65,7 +65,7 @@ class EOrderSearch extends EOrder
      */
     public function search($params)
     {
-        $query = EOrder::find();
+        $query = EOrder::find()->orderBy(['paid_time' => SORT_DESC]);
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,

@@ -43,6 +43,7 @@ class Listing extends \frontend\models\base\MyActiveRecord
             [['sync_at'], 'safe'],
             [['item_id'], 'string', 'max' => 32],
             [['sku'], 'string', 'max' => 64],
+            [['sku','item_id','title'],'trim'],
             [['title'], 'string', 'max' => 128],
             [['item_id'], 'unique'],
             [['sku', 'ebay_id'], 'unique', 'targetAttribute' => ['sku', 'ebay_id'], 'message' => 'The combination of Sku and Ebay ID has already been taken.'],

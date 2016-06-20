@@ -50,7 +50,8 @@ class EbayAccount extends \frontend\models\base\MyActiveRecord
             [['email'], 'string', 'max' => 64],
             [['listing_assets_url'], 'string', 'max' => 255],
             [['item_location'], 'string', 'max' => 256],
-            [['seller_id'], 'unique']
+            [['seller_id'], 'unique'],
+            [['seller_id','paypal','item_location','email'],'trim'],
         ];
     }
 

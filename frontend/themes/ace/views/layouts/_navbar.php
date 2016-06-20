@@ -55,7 +55,12 @@ use frontend\themes\ace\AceAsset;
 								</li>
 							</ul>
 						</li>
-
+            <li>
+							<a href="/order/dispatch-index" target="_blank">
+								<i class="ace-icon fa fa-rocket"></i>
+								发货
+							</a>
+						</li>
 						<li>
 							<a href="#">
 								<i class="ace-icon fa fa-envelope"></i>

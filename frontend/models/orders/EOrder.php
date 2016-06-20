@@ -53,7 +53,7 @@ class EOrder extends \frontend\models\base\MyActiveRecord
     {
         return [
             [['fetched_at', 'created_time', 'paid_time', 'shipped_time'], 'safe'],
-            [['status', 'ebay_id', 'user_id', 'sale_record_number', 'label'], 'integer'],
+            [['status', 'ebay_id', 'user_id', 'sale_record_number'], 'integer'],
             [['ebay_id', 'user_id', 'ebay_order_id', 'ebay_seller_id', 'buyer_id', 'recipient_name', 'recipient_address1', 'recipient_city', 'recipient_state', 'recipient_postcode', 'shipping_service'], 'required'],
             [['total'], 'number'],
             [['ebay_order_id', 'ebay_seller_id', 'recipient_name', 'recipient_city', 'recipient_state'], 'string', 'max' => 64],
@@ -93,7 +93,6 @@ class EOrder extends \frontend\models\base\MyActiveRecord
             'recipient_state' => Yii::t('app/order', 'Recipient State'),
             'recipient_postcode' => Yii::t('app/order', 'Recipient Postcode'),
             'checkout_message' => Yii::t('app/order', 'Checkout Message'),
-            'label' => Yii::t('app/order', 'Label'),
         ];
     }
 
@@ -153,9 +152,6 @@ class EOrder extends \frontend\models\base\MyActiveRecord
         return new EOrderQuery(get_called_class());
     }
 
-    public function getNonLabelCount(){
-
-    }
     // public function getItemPicUrl($itemID){
     //   $ebayListing = new EbayListing($this->ebay_id);
     //   return $ebayListing->getItemPicUrl($itemID);
